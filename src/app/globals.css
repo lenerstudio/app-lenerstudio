@@ -1,0 +1,194 @@
+@import "tailwindcss";
+@config "../../tailwind.config.js";
+
+@theme {
+  /* Registramos tus colores para que funcionen con clases como 'text-primary-blue' o 'hover:bg-primary-blue' */
+  --color-primary-blue: #0066cc;
+  --color-dark: #1a1a1a;
+  --color-white: #ffffff;
+
+  /* Registramos tu animación personalizada */
+  --animate-fade-in-up: fadeInUp 0.6s ease-out;
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Definimos la animación de aumento (pulso) */
+  --animate-infinite-grow: infinite-grow 3s ease-in-out infinite;
+
+  @keyframes infinite-grow {
+
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.05);
+      /* Aumenta un 5% el tamaño */
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply scroll-smooth;
+    /* Mejora el renderizado de fuentes en móvil */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Elimina animaciones si el usuario lo prefiere (accesibilidad) */
+  @media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  html {
+    /* Mejor rendimiento de scroll en móvil */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    @apply bg-white text-gray-900 antialiased;
+    font-family:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "Roboto",
+      "Oxygen",
+      "Ubuntu",
+      "Cantarell",
+      "Fira Sans",
+      "Droid Sans",
+      "Helvetica Neue",
+      sans-serif;
+    /* Evita el parpadeo al hacer tap en iOS */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Tipografía responsiva profesional */
+  h1 {
+    @apply text-3xl md:text-4xl lg:text-5xl font-bold;
+  }
+
+  h2 {
+    @apply text-2xl md:text-3xl lg:text-4xl font-bold;
+  }
+
+  h3 {
+    @apply text-xl md:text-2xl lg:text-3xl font-semibold;
+  }
+
+  p {
+    @apply text-base md:text-lg;
+  }
+
+  /* Área de toque mínima para todos los elementos interactivos (WCAG 2.5.5) */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@layer components {
+
+  /* Clases de utilidad personalizadas */
+  .gradient-blue {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .text-gradient {
+    background: linear-gradient(90deg,
+        #03f7fb,
+        #00f3a2);
+    /* Cambia los colores a tu gusto */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+    /* Asegura que el degradado se aplique correctamente */
+    filter: drop-shadow(0px 0px 10px rgba(96, 239, 255, 0.2));
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-2;
+  }
+
+  /* Estilos para inputs - mejor contraste en móvil */
+  input,
+  textarea,
+  select {
+    @apply text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    /* Tamaño mínimo de fuente para evitar zoom automático en iOS */
+    font-size: max(16px, 1rem);
+  }
+
+  .text-grow-animation {
+    display: inline-block;
+    /* Obligatorio para que funcione el transform */
+    @apply animate-infinite-grow;
+  }
+
+  .nav-link-premium {
+    @apply relative py-1 transition-colors duration-300;
+  }
+
+  /* La línea decorativa */
+  .nav-link-premium::after {
+    content: "";
+    @apply absolute bottom-0 left-1/2 w-0 h-0.5 bg-emerald-400 transition-all duration-300 -translate-x-1/2;
+  }
+
+  /* Animación al pasar el mouse */
+  .nav-link-premium:hover::after {
+    @apply w-full;
+  }
+
+  /* Secciones con content-visibility para mejorar rendimiento de render en móvil */
+  .section-lazy {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+
+  /* Focus visible mejorado para accesibilidad con teclado */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-500;
+  }
+}
+
+/* Scrollbar personalizado (solo desktop) */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded-full hover:bg-gray-500;
+  }
+}
