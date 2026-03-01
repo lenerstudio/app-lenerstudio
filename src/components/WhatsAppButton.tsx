@@ -1,13 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MessageCircle } from "lucide-react";
 
 const WhatsAppButton: React.FC = () => {
+    const pathname = usePathname();
     const [isVisible, setIsVisible] = useState(false);
     const [isTooltipOpen, setIsTooltipOpen] = useState(false);
     const [hasShownTooltip, setHasShownTooltip] = useState(false);
+
+
 
     const whatsappNumber = "+34624432245";
     const whatsappMessage =
@@ -44,6 +48,9 @@ const WhatsAppButton: React.FC = () => {
             return () => clearTimeout(timer);
         }
     }, [isVisible, hasShownTooltip]);
+
+    // No mostrar en el dashboard administrativo
+    if (pathname?.startsWith("/admin")) return null;
 
     return (
         <div

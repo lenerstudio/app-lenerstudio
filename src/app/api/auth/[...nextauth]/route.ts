@@ -12,27 +12,38 @@ const handler = NextAuth({
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) return null;
+                if (!credentials?.email || !credentials?.password) {
+                    return null;
+                }
 
-                const users: any = await query(
-                    "SELECT * FROM users WHERE email = ? LIMIT 1",
-                    [credentials.email]
-                );
+                try {
+                    const users: any = await query(
+                        "SELECT * FROM users WHERE email = ? LIMIT 1",
+                        [credentials.email]
+                    );
 
-                const user = users[0];
+                    const user = users[0];
 
-                if (!user) return null;
+                    if (!user) {
+                        return null;
+                    }
 
-                const isValid = await bcrypt.compare(credentials.password, user.password);
+                    const isValid = await bcrypt.compare(credentials.password, user.password);
 
-                if (!isValid) return null;
+                    if (!isValid) {
+                        return null;
+                    }
 
-                return {
-                    id: user.id.toString(),
-                    name: user.name,
-                    email: user.email,
-                    role: user.role,
-                };
+                    return {
+                        id: user.id.toString(),
+                        name: user.name,
+                        email: user.email,
+                        role: user.role,
+                    };
+                } catch (error) {
+                    console.error("Error en authorize:", error);
+                    return null;
+                }
             }
         })
     ],

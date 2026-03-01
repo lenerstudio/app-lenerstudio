@@ -79,7 +79,22 @@ const ContactoFinal: React.FC<ContactoFinalProps> = () => {
 
     setIsSubmitting(true);
 
-    // Reemplaza estos valores con tus IDs de EmailJS
+    // 1. Guardar en Base de Datos (Nuestro API)
+    try {
+      await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          source_url: window.location.pathname
+        }),
+      });
+    } catch (dbError) {
+      console.error("Error saving lead to DB:", dbError);
+      // No bloqueamos el proceso si solo falla la DB pero el mail puede enviarse
+    }
+
+    // 2. Enviar por Email (EmailJS)
     const SERVICE_ID = "service_webmail";
     const TEMPLATE_ID = "template_8znqq9j";
     const PUBLIC_KEY = "cE8bHJ8B4ICIqMkeT";
@@ -101,11 +116,9 @@ const ContactoFinal: React.FC<ContactoFinalProps> = () => {
       setAceptaPrivacidad(false);
       setStatus("success");
       setIsSubmitting(false);
-      // Redirigir a /gracias para trackear la conversión
-      // Configura este evento en Google Analytics 4 o Meta Pixel
       router.push("/gracias");
     } catch (error) {
-      console.error("Error al enviar:", error);
+      console.error("Error al enviar EmailJS:", error);
       setStatus("error");
       toast({
         title: "Error",

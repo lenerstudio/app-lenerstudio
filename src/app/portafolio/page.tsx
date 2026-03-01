@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 import {
     ExternalLink,
     Github,
@@ -16,113 +15,38 @@ import {
 // ──────────────────────────────────────────────
 // TIPOS
 // ──────────────────────────────────────────────
-type Categoria = "Todos" | "Landing Page" | "E-commerce" | "App Web" | "Corporativo";
+type Categoria = "Todos" | "Landing Page" | "Web Corporativa" | "E-commerce" | "SaaS / App";
 
 interface Proyecto {
     id: number;
     titulo: string;
-    descripcion: string;
+    description: string;
     imagen: string;
-    categoria: Categoria;
+    categoria: string;
     tecnologias: string[];
     urlDemo?: string;
-    urlRepo?: string;
     destacado?: boolean;
-    estado: "En vivo" | "En desarrollo" | "Demo";
-    color: string; // gradiente para el card
+    estado: string;
+    color: string;
 }
 
-// ──────────────────────────────────────────────
-// DATOS DE PROYECTOS
-// ──────────────────────────────────────────────
-const proyectos: Proyecto[] = [
-    {
-        id: 1,
-        titulo: "Lener Studio — Landing Page",
-        descripcion:
-            "Landing page de alta conversión para agencia web. Diseño moderno con animaciones fluidas, formulario de contacto integrado con EmailJS y SEO optimizado.",
-        imagen:
-            "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=800&q=80&fm=webp&fit=crop",
-        categoria: "Landing Page",
-        tecnologias: ["React", "Tailwind CSS", "Framer Motion", "EmailJS", "Vite"],
-        urlDemo: "https://lenerstudio.vercel.app",
-        destacado: true,
-        estado: "En vivo",
-        color: "from-blue-600 to-cyan-500",
-    },
-    {
-        id: 2,
-        titulo: "Landing Page + Tienda Online — E-commerce",
-        descripcion:
-            "Plataforma de comercio electrónico completa con carrito, pagos y panel de administración. Gestión de products, pedidos y clientes en tiempo real.",
-        imagen:
-            "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80&fm=webp&fit=crop",
-        categoria: "E-commerce",
-        tecnologias: ["Next.js", "Prisma", "PostgreSQL", "Stripe", "Vercel"],
-        urlDemo: "#",
-        estado: "Demo",
-        color: "from-purple-600 to-pink-500",
-    },
-    {
-        id: 3,
-        titulo: "Dashboard SaaS — App Web",
-        descripcion:
-            "Panel de control para gestión de métricas de negocio. Gráficas interactivas, exportación de reportes y gestión de usuarios con roles y permisos.",
-        imagen:
-            "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80&fm=webp&fit=crop",
-        categoria: "App Web",
-        tecnologias: ["React", "Node.js", "MySQL", "Chart.js", "JWT"],
-        urlDemo: "#",
-        estado: "En desarrollo",
-        color: "from-orange-500 to-red-500",
-    },
-    {
-        id: 4,
-        titulo: "Despacho Jurídico — Corporativo",
-        descripcion:
-            "Web corporativa para bufete de abogados. Diseño elegante y profesional con secciones de áreas de práctica, equipo y formulario de consulta.",
-        imagen:
-            "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&q=80&fm=webp&fit=crop",
-        categoria: "Corporativo",
-        tecnologias: ["WordPress", "Elementor", "SEO", "WPForms"],
-        urlDemo: "#",
-        estado: "En vivo",
-        color: "from-slate-600 to-gray-500",
-    },
-    {
-        id: 5,
-        titulo: "Clínica Dental — Landing Page",
-        descripcion:
-            "Landing page para clínica dental con sistema de citas online, galería de tratamientos, testimonios reales y optimización local SEO.",
-        imagen:
-            "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80&fm=webp&fit=crop",
-        categoria: "Landing Page",
-        tecnologias: ["React", "Tailwind CSS", "Calendly", "Google Maps"],
-        urlDemo: "#",
-        estado: "Demo",
-        color: "from-emerald-500 to-teal-500",
-    },
-    {
-        id: 6,
-        titulo: "Restaurante — Web Completa",
-        descripcion:
-            "Sitio web para restaurante con carta digital interactiva, sistema de reservas online, galería de platos y gestión desde panel de administración.",
-        imagen:
-            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80&fm=webp&fit=crop",
-        categoria: "Corporativo",
-        tecnologias: ["Next.js", "Laravel", "MySQL", "Stripe", "Cloudinary"],
-        urlDemo: "#",
-        estado: "En vivo",
-        color: "from-yellow-500 to-orange-500",
-    },
-];
+const getGradient = (category: string) => {
+    switch (category) {
+        case "Landing Page": return "from-blue-600 to-cyan-500";
+        case "E-commerce": return "from-purple-600 to-pink-500";
+        case "SaaS / App": return "from-orange-500 to-red-500";
+        case "Web Corporativa": return "from-slate-600 to-gray-500";
+        default: return "from-emerald-500 to-teal-500";
+    }
+};
 
-const categorias: Categoria[] = ["Todos", "Landing Page", "E-commerce", "App Web", "Corporativo"];
+const categorias: Categoria[] = ["Todos", "Landing Page", "Web Corporativa", "E-commerce", "SaaS / App"];
 
 const estadoColors: Record<string, string> = {
     "En vivo": "bg-green-500/20 text-green-400 border-green-500/30",
     "En desarrollo": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
     Demo: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    "Publicado": "bg-green-500/20 text-green-400 border-green-500/30",
 };
 
 // ──────────────────────────────────────────────
@@ -189,19 +113,7 @@ const ProyectoCard: React.FC<{ proyecto: Proyecto; index: number }> = ({
                             Ver Demo
                         </a>
                     )}
-                    {proyecto.urlRepo && (
-                        <a
-                            href={proyecto.urlRepo}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`Ver código fuente de ${proyecto.titulo}`}
-                            className="flex items-center gap-2 bg-gray-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-gray-700 transition-all duration-200 hover:scale-105 shadow-xl border border-gray-600"
-                        >
-                            <Github size={16} aria-hidden="true" />
-                            Código
-                        </a>
-                    )}
-                    {(!proyecto.urlDemo || proyecto.urlDemo === "#") && !proyecto.urlRepo && (
+                    {(!proyecto.urlDemo || proyecto.urlDemo === "#") && (
                         <p className="text-white text-sm font-medium bg-black/40 px-4 py-2 rounded-xl">
                             Próximamente
                         </p>
@@ -222,7 +134,7 @@ const ProyectoCard: React.FC<{ proyecto: Proyecto; index: number }> = ({
                     {proyecto.titulo}
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-4 flex-1">
-                    {proyecto.descripcion}
+                    {proyecto.description}
                 </p>
 
                 {/* Stack de tecnologías */}
@@ -265,12 +177,31 @@ const ProyectoCard: React.FC<{ proyecto: Proyecto; index: number }> = ({
 // PÁGINA PRINCIPAL
 // ──────────────────────────────────────────────
 export default function PortafolioPage() {
-    const router = useRouter();
+    const [proyectos, setProyectos] = useState<Proyecto[]>([]);
+    const [loading, setLoading] = useState(true);
     const [categoriaActiva, setCategoriaActiva] = useState<Categoria>("Todos");
     const [busqueda, setBusqueda] = useState("");
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "instant" });
+        fetch("/api/portfolio")
+            .then(res => res.json())
+            .then(data => {
+                const mapped = data.map((p: any) => ({
+                    id: p.id,
+                    titulo: p.title,
+                    description: p.description,
+                    imagen: p.main_image,
+                    categoria: p.category,
+                    tecnologias: typeof p.technologies === 'string' ? JSON.parse(p.technologies) : p.technologies,
+                    urlDemo: p.live_url,
+                    estado: p.is_published ? "Publicado" : "Oculto",
+                    color: getGradient(p.category)
+                }));
+                setProyectos(mapped);
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
     }, []);
 
     const proyectosFiltrados = proyectos.filter((p) => {
@@ -278,7 +209,7 @@ export default function PortafolioPage() {
         const matchBusqueda =
             busqueda === "" ||
             p.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-            p.descripcion.toLowerCase().includes(busqueda.toLowerCase()) ||
+            p.description.toLowerCase().includes(busqueda.toLowerCase()) ||
             p.tecnologias.some((t) => t.toLowerCase().includes(busqueda.toLowerCase()));
         return matchCat && matchBusqueda;
     });
@@ -299,7 +230,7 @@ export default function PortafolioPage() {
                     <motion.button
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        onClick={() => router.push("/")}
+                        onClick={() => window.location.href = "/"}
                         aria-label="Volver a la página de inicio"
                         className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-10 group"
                     >
@@ -471,7 +402,7 @@ export default function PortafolioPage() {
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <button
-                                onClick={() => router.push("/#contacto")}
+                                onClick={() => window.location.href = "/#contacto"}
                                 aria-label="Ir al formulario de contacto"
                                 className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-xl shadow-blue-600/25"
                             >

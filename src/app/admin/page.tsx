@@ -19,6 +19,12 @@ import {
   Save,
   Check,
   RefreshCw,
+  MessageCircle,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -35,10 +41,17 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [activeView, setActiveView] = useState<ViewType>("overview");
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
+    }
+
+    if (status === "authenticated") {
+      fetch("/api/admin/analytics")
+        .then(res => res.json())
+        .then(data => setStats(data.summary));
     }
   }, [status, router]);
 
@@ -60,17 +73,17 @@ export default function AdminDashboard() {
       {/* Sidebar Premium */}
       <motion.aside
         initial={false}
-        animate={{ width: isSidebarOpen ? 280 : 80 }}
-        className="border-r border-slate-800/50 bg-[#020617] flex flex-col z-20"
+        animate={{ width: isSidebarOpen ? 240 : 72 }}
+        className="border-r border-slate-800/40 bg-[#020617] flex flex-col z-20"
       >
-        <div className="p-6 flex items-center justify-between">
+        <div className="p-5 flex items-center justify-between">
           {isSidebarOpen && (
             <motion.h2
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-xl font-bold bg-gradient-to-r from-white to-slate-500 bg-clip-text text-transparent"
+              className="text-lg font-black tracking-tighter bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent"
             >
-              LENER STUDIO
+              LENER PANEL
             </motion.h2>
           )}
           <button
@@ -81,39 +94,39 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <nav className="flex-grow p-4 space-y-2">
+        <nav className="flex-grow p-3 space-y-1">
           <NavItem
-            icon={<TrendingUp size={20} />}
+            icon={<TrendingUp size={18} />}
             label="Overview"
             active={activeView === "overview"}
             collapsed={!isSidebarOpen}
             onClick={() => setActiveView("overview")}
           />
           <NavItem
-            icon={<MessageSquare size={20} />}
+            icon={<MessageSquare size={18} />}
             label="Leads & Mensajes"
             active={activeView === "leads"}
-            badge="12"
+            badge={stats?.newLeads > 0 ? stats.newLeads.toString() : undefined}
             collapsed={!isSidebarOpen}
             onClick={() => setActiveView("leads")}
           />
           <NavItem
-            icon={<Briefcase size={20} />}
+            icon={<Briefcase size={18} />}
             label="Portafolio"
             active={activeView === "portfolio"}
             collapsed={!isSidebarOpen}
             onClick={() => setActiveView("portfolio")}
           />
           <NavItem
-            icon={<Star size={20} />}
+            icon={<Star size={18} />}
             label="Testimonios"
             active={activeView === "testimonials"}
             collapsed={!isSidebarOpen}
             onClick={() => setActiveView("testimonials")}
           />
-          <div className="my-6 border-t border-slate-800/50 mx-2" />
+          <div className="my-4 border-t border-slate-800/40 mx-2" />
           <NavItem
-            icon={<Settings size={20} />}
+            icon={<Settings size={18} />}
             label="Configuración & SEO"
             active={activeView === "settings"}
             collapsed={!isSidebarOpen}
@@ -121,13 +134,13 @@ export default function AdminDashboard() {
           />
         </nav>
 
-        <div className="p-4 border-t border-slate-800/50">
+        <div className="p-3 border-t border-slate-800/40">
           <button
             onClick={() => signOut()}
-            className="w-full flex items-center gap-3 text-slate-500 hover:text-red-400 p-3 rounded-xl transition-all hover:bg-red-500/5"
+            className="w-full flex items-center gap-3 text-slate-500 hover:text-red-400 p-2.5 rounded-xl transition-all hover:bg-red-500/10"
           >
-            <LogOut size={20} />
-            {isSidebarOpen && <span>Cerrar Sesión</span>}
+            <LogOut size={18} />
+            {isSidebarOpen && <span className="text-sm font-medium">Cerrar Sesión</span>}
           </button>
         </div>
       </motion.aside>
@@ -135,28 +148,28 @@ export default function AdminDashboard() {
       {/* Main Content Area */}
       <main className="flex-grow flex flex-col relative overflow-hidden">
         {/* Header */}
-        <header className="h-20 border-b border-slate-800/50 flex items-center justify-between px-8 bg-slate-950/20 backdrop-blur-md z-10">
+        <header className="h-16 border-b border-slate-800/40 flex items-center justify-between px-6 bg-slate-950/40 backdrop-blur-xl z-10">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold capitalize text-white">
+            <h1 className="text-sm font-bold uppercase tracking-widest text-white/90">
               {activeView.replace("-", " ")}
             </h1>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">
-                Sistema Online
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-green-500/5 border border-green-500/20 rounded-full">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[9px] font-black text-green-500 uppercase tracking-tighter">
+                Online
               </span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs text-slate-300 font-bold overflow-hidden">
               {session.user?.name?.charAt(0) || "A"}
             </div>
           </div>
         </header>
 
         {/* Dynamic View Scroll Area */}
-        <div className="flex-grow overflow-y-auto p-8 custom-scrollbar">
+        <div className="flex-grow overflow-y-auto p-6 custom-scrollbar bg-slate-950/10">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeView}
@@ -184,27 +197,26 @@ function NavItem({ icon, label, active, badge, collapsed, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all relative group ${
-        active
-          ? "bg-primary-blue text-white shadow-lg shadow-blue-500/20"
-          : "text-slate-500 hover:bg-slate-800/50 hover:text-slate-200"
-      }`}
+      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all relative group ${active
+        ? "bg-white/10 text-white"
+        : "text-slate-500 hover:bg-slate-800/30 hover:text-slate-200"
+        }`}
     >
       <div
-        className={`${active ? "text-white" : "group-hover:text-primary-blue"} transition-colors`}
+        className={`${active ? "text-primary-blue" : "group-hover:text-primary-blue"} transition-colors`}
       >
         {icon}
       </div>
       {!collapsed && (
-        <span className="font-medium text-sm whitespace-nowrap">{label}</span>
+        <span className="font-medium text-[13px] whitespace-nowrap tracking-tight">{label}</span>
       )}
       {!collapsed && badge && (
-        <span className="ml-auto bg-primary-blue/20 text-primary-blue text-[10px] px-2 py-0.5 rounded-full font-bold">
+        <span className="ml-auto bg-primary-blue text-white text-[9px] px-1.5 py-0.5 rounded-md font-black">
           {badge}
         </span>
       )}
-      {collapsed && active && (
-        <div className="absolute left-0 w-1 h-6 bg-primary-blue rounded-r-full" />
+      {active && (
+        <div className="absolute left-0 w-0.5 h-4 bg-primary-blue rounded-r-full" />
       )}
     </button>
   );
@@ -238,22 +250,21 @@ function OverviewView() {
   };
   const chartData = analytics?.viewsByDay || [];
 
-  // Preparar datos para el gráfico (invertir para orden cronológico)
   const reversedChart = [...chartData].reverse();
   const maxVal = Math.max(...reversedChart.map((d: any) => d.count), 1);
 
   return (
-    <div className="space-y-10">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard
           label="Leads Totales"
           value={summary.totalLeads.toString()}
-          subValue="Histórico completo"
+          subValue="Histórico"
         />
         <StatCard
           label="Nuevos Leads"
           value={summary.newLeads.toString()}
-          subValue="Pendientes de contactar"
+          subValue="Pendientes"
           highlight
         />
         <StatCard
@@ -264,38 +275,35 @@ function OverviewView() {
         <StatCard
           label="Tasa Conversión"
           value={`${((summary.totalLeads / (summary.totalViews || 1)) * 100).toFixed(1)}%`}
-          subValue="Leads vs Visitas"
+          subValue="Rendimiento"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800/60 p-8 rounded-[2.5rem]">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-lg font-bold text-white uppercase tracking-tighter">
-              Tráfico Reciente (Vistas de página)
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800/40 p-6 rounded-2xl">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              Actividad Reciente
             </h3>
-            <div className="flex items-center gap-2 px-3 py-1 bg-slate-950 border border-slate-800 rounded-lg text-[10px] text-slate-500 font-bold uppercase">
-              Últimos 7 días
+            <div className="text-[10px] text-slate-600 font-bold uppercase">
+              7 días
             </div>
           </div>
-          <div className="h-64 flex items-end gap-3 px-4 shadow-inner">
+          <div className="h-48 flex items-end gap-2 px-2">
             {reversedChart.length > 0 ? (
               reversedChart.map((day: any, i: number) => (
                 <div
                   key={i}
-                  className="flex-grow flex flex-col items-center gap-3 group"
+                  className="flex-grow flex flex-col items-center gap-2 group"
                 >
                   <div className="relative w-full">
                     <motion.div
                       initial={{ height: 0 }}
                       animate={{ height: `${(day.count / maxVal) * 100}%` }}
-                      className="w-full bg-gradient-to-t from-primary-blue/20 to-primary-blue rounded-t-xl group-hover:to-blue-400 transition-colors cursor-pointer"
+                      className="w-full bg-primary-blue/20 group-hover:bg-primary-blue/50 rounded-t-md transition-colors cursor-pointer min-h-[2px]"
                     />
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                      {day.count} vistas
-                    </div>
                   </div>
-                  <span className="text-[10px] text-slate-600 font-bold uppercase">
+                  <span className="text-[9px] text-slate-600 font-bold uppercase">
                     {new Date(day.date).toLocaleDateString("es-ES", {
                       weekday: "short",
                     })}
@@ -303,36 +311,31 @@ function OverviewView() {
                 </div>
               ))
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-600 italic text-sm">
-                Esperando datos de tráfico...
+              <div className="w-full h-full flex items-center justify-center text-slate-700 italic text-xs tracking-tight">
+                Esperando flujo de datos...
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-slate-800/60 p-8 rounded-[2.5rem]">
-          <h3 className="text-lg font-bold text-white mb-6 uppercase tracking-tighter">
-            Acciones Rápidas
+        <div className="bg-slate-900/40 border border-slate-800/40 p-6 rounded-2xl">
+          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">
+            Atajos de Control
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-2">
             <ActionButton
-              label="Ver todos los leads"
-              icon={<MessageSquare size={18} />}
+              label="Ver mensajes"
+              icon={<MessageSquare size={14} />}
             />
-            <ActionButton label="Añadir proyecto" icon={<Plus size={18} />} />
+            <ActionButton label="Nuevo proyecto" icon={<Plus size={14} />} />
             <ActionButton
-              label="Cambiar SEO Meta"
-              icon={<Search size={18} />}
+              label="Cambiar SEO"
+              icon={<Search size={14} />}
             />
-            <div className="pt-4 border-t border-slate-800/50">
-              <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest mb-4">
-                Estado del Server
-              </p>
-              <div className="flex items-center gap-3 p-4 bg-green-500/5 border border-green-500/20 rounded-2xl">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-bold text-green-500">
-                  Base de Datos OK
-                </span>
+            <div className="pt-4 mt-4 border-t border-slate-800/40 opacity-50">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Server Active</span>
               </div>
             </div>
           </div>
@@ -344,11 +347,11 @@ function OverviewView() {
 
 function ActionButton({ label, icon }: any) {
   return (
-    <button className="w-full flex items-center gap-3 p-4 bg-slate-950/50 border border-slate-800 rounded-2xl text-sm text-slate-400 hover:text-white hover:border-primary-blue/50 hover:bg-primary-blue/5 transition-all text-left group">
+    <button className="w-full flex items-center gap-3 p-3 bg-slate-950/40 border border-slate-800/50 rounded-xl text-xs text-slate-400 hover:text-white hover:border-primary-blue/30 transition-all text-left group">
       <div className="text-slate-600 group-hover:text-primary-blue transition-colors">
         {icon}
       </div>
-      <span className="font-medium">{label}</span>
+      <span className="font-bold tracking-tight">{label}</span>
     </button>
   );
 }
@@ -362,18 +365,60 @@ function Last7Days() {
   );
 }
 
-function LeadsView() {
-  const [leads, setLeads] = useState([]);
-  const [loading, setLoading] = useState(true);
+import { useToast } from "@/components/ui/use-toast";
 
-  useEffect(() => {
+function LeadsView() {
+  const [leads, setLeads] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
+  const [totalLeads, setTotalLeads] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const { toast } = useToast();
+
+  const fetchLeads = (silent = false) => {
+    if (!silent) setLoading(true);
     fetch("/api/admin/leads")
       .then((res) => res.json())
       .then((data) => {
+        if (silent && data.length > leads.length) {
+          toast({
+            title: "🔔 ¡Nuevo Lead!",
+            description: `Has recibido un nuevo mensaje de ${data[0].name}`,
+            variant: "default",
+          });
+        }
         setLeads(data);
-        setLoading(false);
-      });
+        setTotalLeads(data.length);
+        if (!silent) setLoading(false);
+      })
+      .catch(() => { if (!silent) setLoading(false); });
+  };
+
+  useEffect(() => {
+    fetchLeads();
+
+    // Polling cada 30 segundos para "notificaciones de entrada"
+    const interval = setInterval(() => fetchLeads(true), 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  const handleStatusChange = async (id: number, newStatus: string) => {
+    try {
+      const res = await fetch("/api/admin/leads", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      if (res.ok) {
+        setLeads((prev: any) =>
+          prev.map((l: any) => (l.id === id ? { ...l, status: newStatus } : l))
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   if (loading)
     return (
@@ -384,89 +429,172 @@ function LeadsView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between gap-4">
-        <div className="relative flex-grow max-w-md">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="relative flex-grow max-w-sm">
           <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
-            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600"
+            size={14}
           />
           <input
             type="text"
-            placeholder="Buscar lead por nombre o empresa..."
-            className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-1 focus:ring-primary-blue transition-all"
+            placeholder="Buscar por nombre..."
+            className="w-full bg-slate-900/60 border border-slate-800/60 rounded-xl py-2 pl-10 pr-4 text-xs outline-none focus:ring-1 focus:ring-primary-blue/30 transition-all text-slate-400"
           />
         </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-5 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-sm font-medium hover:bg-slate-800 transition-all">
-            <Filter size={18} /> Filtrar
+        <div className="flex gap-2">
+          <button className="flex items-center gap-2 px-4 py-2 bg-slate-900/60 border border-slate-800/60 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all">
+            <Filter size={14} /> Filtrar
           </button>
-          <button className="flex items-center gap-2 px-5 py-3 bg-primary-blue text-white rounded-2xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all">
-            Exportar CSV
-          </button>
+          <div className="flex items-center gap-3 px-4 py-2 bg-primary-blue/5 rounded-xl border border-primary-blue/10">
+            <span className="text-[10px] font-black text-primary-blue/60 uppercase tracking-widest">Registros:</span>
+            <span className="text-xs font-black text-primary-blue">{totalLeads}</span>
+          </div>
         </div>
       </div>
 
-      <div className="bg-slate-900/40 border border-slate-800/60 rounded-[2.5rem] overflow-hidden">
+      <div className="bg-slate-900/40 border border-slate-800/60 rounded-[0.5rem] overflow-hidden">
         <table className="w-full text-left">
           <thead>
-            <tr className="border-b border-slate-800/50 bg-slate-950/20">
-              <th className="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Lead
-              </th>
-              <th className="px-4 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Servicio
-              </th>
-              <th className="px-4 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Estado
-              </th>
-              <th className="px-4 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Fecha
-              </th>
-              <th className="px-8 py-5 text-right"></th>
+            <tr className="border-b border-slate-800/40 bg-slate-950/40">
+              <th className="px-5 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest">Fecha</th>
+              <th className="px-3 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest">Lead / Identidad</th>
+              <th className="px-3 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest">Interés</th>
+              <th className="px-3 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest text-center">Msj</th>
+              <th className="px-3 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest text-center">Gestión</th>
+              <th className="px-5 py-3 text-right text-[10px] font-black text-slate-600 uppercase tracking-widest">Canal</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/30">
-            {leads.map((lead: any) => (
-              <tr
-                key={lead.id}
-                className="hover:bg-slate-800/20 transition-all group"
-              >
-                <td className="px-8 py-6">
-                  <div>
-                    <div className="font-bold text-white mb-0.5">
-                      {lead.name}
+          <tbody className="divide-y divide-slate-800/10">
+            {leads.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((lead: any) => {
+              const statusColors: any = {
+                nuevo: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+                contactado: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+                en_negociacion: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+                ganado: "text-green-400 bg-green-500/10 border-green-500/20",
+                perdido: "text-red-400 bg-red-500/10 border-red-500/20"
+              };
+
+              return (
+                <tr key={lead.id} className="hover:bg-white/[0.01] transition-all group">
+                  <td className="px-5 py-1 text-[10px] text-slate-600 font-bold">
+                    {new Date(lead.created_at).toLocaleDateString("es-ES", { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="max-w-[180px]">
+                      <div className="text-[12px] font-black text-slate-300 truncate tracking-tight">{lead.name}</div>
+                      <a href={`mailto:${lead.email}`} className="text-[10px] text-slate-600 hover:text-primary-blue transition-colors font-bold block truncate">
+                        {lead.email}
+                      </a>
                     </div>
-                    <div className="text-xs text-slate-500">{lead.email}</div>
-                  </div>
-                </td>
-                <td className="px-4 py-6">
-                  <span className="text-xs px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20 font-medium">
-                    {lead.service_type}
-                  </span>
-                </td>
-                <td className="px-4 py-6">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-2 h-2 rounded-full ${lead.status === "nuevo" ? "bg-blue-500" : "bg-green-500"}`}
-                    />
-                    <span className="text-sm text-slate-300 capitalize">
-                      {lead.status}
+                  </td>
+                  <td className="px-3 py-2">
+                    <span className="text-[10px] px-1.5 py-0.5 bg-slate-900/60 text-blue-300 rounded border border-slate-800/50 font-black uppercase tracking-tighter">
+                      {lead.service_type.replace('_', ' ')}
                     </span>
-                  </div>
-                </td>
-                <td className="px-4 py-6 text-sm text-slate-500">
-                  {new Date(lead.created_at).toLocaleDateString()}
-                </td>
-                <td className="px-8 py-6 text-right">
-                  <button className="p-2 hover:bg-slate-800 rounded-lg text-slate-500 hover:text-white transition-all">
-                    <ExternalLink size={18} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    <button
+                      onClick={() => setSelectedMessage(lead.message)}
+                      className="p-1 px-2.5 bg-slate-900 border border-slate-800 rounded text-slate-500 hover:text-white hover:border-primary-blue/30 transition-all text-[10px] font-black flex items-center gap-1.5 mx-auto"
+                    >
+                      <MessageSquare size={10} /> LEER
+                    </button>
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${statusColors[lead.status]?.split(' ')[1].replace('bg-', 'bg-').split('/')[0]}`} />
+                      <select
+                        value={lead.status}
+                        onChange={(e) => handleStatusChange(lead.id, e.target.value)}
+                        className={`bg-slate-950/40 border border-slate-800/80 rounded py-1 px-2 text-[10px] font-black uppercase outline-none cursor-pointer transition-all hover:border-slate-700/50 focus:ring-1 focus:ring-primary-blue/20 ${statusColors[lead.status]?.split(' ')[0]}`}
+                      >
+                        <option value="nuevo">NUEVO</option>
+                        <option value="contactado">CONTACTADO</option>
+                        <option value="en_negociacion">NEGOCIANDO</option>
+                        <option value="ganado">GANADO</option>
+                        <option value="perdido">PERDIDO</option>
+                      </select>
+                    </div>
+                  </td>
+                  <td className="px-5 py-2 text-right">
+                    <a
+                      href={`https://wa.me/${lead.phone?.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 p-1 px-3 bg-green-500/5 border border-green-500/10 rounded text-green-500/60 hover:text-green-500 hover:bg-green-500/10 hover:border-green-500/30 transition-all text-[10px] font-black"
+                    >
+                      WHATSAPP <MessageCircle size={12} />
+                    </a>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Leads */}
+      {leads.length > itemsPerPage && (
+        <div className="flex justify-center items-center gap-4 py-2">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-500 disabled:opacity-20 hover:text-white transition-all"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            Página {currentPage} de {Math.ceil(leads.length / itemsPerPage)}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(Math.ceil(leads.length / itemsPerPage), p + 1))}
+            disabled={currentPage === Math.ceil(leads.length / itemsPerPage)}
+            className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-500 disabled:opacity-20 hover:text-white transition-all"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* MODAL PARA EL MENSAJE */}
+      <AnimatePresence>
+        {selectedMessage && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedMessage(null)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative bg-slate-900 border border-slate-800 p-10 rounded-[1.5rem] w-full max-w-lg shadow-2xl"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div className="w-12 h-12 bg-primary-blue/10 rounded-2xl flex items-center justify-center text-primary-blue">
+                  <MessageSquare size={24} />
+                </div>
+                <button onClick={() => setSelectedMessage(null)} className="text-slate-500 hover:text-white transition-colors">
+                  <RefreshCw size={20} className="rotate-45" />
+                </button>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-4 uppercase tracking-tighter">Contenido del Lead</h3>
+              <div className="bg-slate-950/50 border border-slate-800 p-5 rounded-3xl text-slate-300 leading-relaxed italic">
+                "{selectedMessage}"
+              </div>
+              <button
+                onClick={() => setSelectedMessage(null)}
+                className="w-full mt-8 py-4 bg-slate-800 text-slate-200 font-bold text-center rounded-2xl hover:bg-slate-700 flex items-center justify-center transition-colors"
+              >
+                <span className="text-blue-300 text-center block">Cerrar mensaje</span>
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -475,7 +603,10 @@ function PortfolioView() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -483,6 +614,7 @@ function PortfolioView() {
     category: "Landing Page",
     description: "",
     live_url: "",
+    technologies: [] as string[],
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -491,7 +623,6 @@ function PortfolioView() {
     fetch("/api/admin/portfolio")
       .then((res) => res.json())
       .then((data) => {
-        //setProjects(Array.isArray(data) ? data : []);
         const validProjects = Array.isArray(data) ? data : [];
         setProjects(validProjects as Project[]);
         setLoading(false);
@@ -503,36 +634,88 @@ function PortfolioView() {
     fetchProjects();
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleToggleStatus = async (id: number, currentStatus: boolean) => {
+    try {
+      const res = await fetch("/api/admin/portfolio", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, is_published: !currentStatus }),
+      });
+      if (res.ok) fetchProjects();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("¿Eliminar este proyecto permanentemente?")) return;
+    try {
+      const res = await fetch(`/api/admin/portfolio?id=${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) fetchProjects();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleOpenEdit = (project: Project) => {
+    setEditingProject(project);
+    setFormData({
+      title: project.title,
+      category: project.category,
+      description: project.description,
+      live_url: project.live_url || "",
+      technologies: Array.isArray(project.technologies)
+        ? project.technologies
+        : typeof project.technologies === 'string'
+          ? JSON.parse(project.technologies || '[]')
+          : [],
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile) return alert("Por favor, selecciona una imagen");
+    if (!selectedFile && !editingProject) return alert("Por favor, selecciona una imagen");
 
     setIsUploading(true);
     const data = new FormData();
+    if (editingProject) data.append("id", editingProject.id.toString());
     data.append("title", formData.title);
     data.append("category", formData.category);
     data.append("description", formData.description);
     data.append("live_url", formData.live_url);
-    data.append("image", selectedFile);
+    data.append("technologies", JSON.stringify(formData.technologies));
+    if (selectedFile) {
+      data.append("image", selectedFile);
+    } else if (editingProject) {
+      data.append("current_image", editingProject.main_image);
+    }
 
     try {
-      const res = await fetch("/api/admin/portfolio", {
-        method: "POST",
+      const url = "/api/admin/portfolio";
+      const method = editingProject ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method: method,
         body: data,
       });
 
       if (res.ok) {
         setIsModalOpen(false);
+        setEditingProject(null);
         setFormData({
           title: "",
           category: "Landing Page",
           description: "",
           live_url: "",
+          technologies: [],
         });
         setSelectedFile(null);
         fetchProjects();
       } else {
-        alert("Error al subir el proyecto");
+        alert("Error al procesar el proyecto");
       }
     } catch (err) {
       console.error(err);
@@ -549,47 +732,95 @@ function PortfolioView() {
     );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-white uppercase tracking-tighter">
-            Proyectos
+          <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">
+            Catálogo de Proyectos
           </h2>
-          <p className="text-slate-500 text-sm mt-1">
-            Gestiona los casos de éxito mostrados en tu ecosistema digital.
-          </p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-4 bg-primary-blue text-white rounded-[1.5rem] font-bold shadow-xl shadow-blue-500/20 hover:scale-105 transition-all"
+          onClick={() => {
+            setEditingProject(null);
+            setFormData({
+              title: "",
+              category: "Landing Page",
+              description: "",
+              live_url: "",
+              technologies: [],
+            });
+            setSelectedFile(null);
+            setIsModalOpen(true);
+          }}
+          className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
         >
-          <Plus size={20} /> Nuevo Proyecto
+          <Plus size={16} /> NUEVO PROYECTO
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
-        {projects.map((project: any) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+        {projects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((project: any) => (
           <ProjectCard
             key={project.id}
             title={project.title}
             category={project.category}
             image={project.main_image}
+            technologies={project.technologies}
             status={project.is_published ? "Publicado" : "Oculto"}
+            onToggleStatus={() => handleToggleStatus(project.id, project.is_published)}
+            onEdit={() => handleOpenEdit(project)}
+            onDelete={() => handleDelete(project.id)}
           />
         ))}
 
-        <div
-          onClick={() => setIsModalOpen(true)}
-          className="border-2 border-dashed border-slate-800 rounded-[2.5rem] flex flex-col items-center justify-center p-12 text-slate-600 hover:border-slate-600 hover:text-slate-400 transition-all cursor-pointer group min-h-[350px]"
-        >
-          <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Plus size={32} />
+        {currentPage === 1 && (
+          <div
+            onClick={() => {
+              setEditingProject(null);
+              setFormData({
+                title: "",
+                category: "Landing Page",
+                description: "",
+                live_url: "",
+                technologies: [],
+              });
+              setSelectedFile(null);
+              setIsModalOpen(true);
+            }}
+            className="border-2 border-dashed border-slate-800 rounded-[2.5rem] flex flex-col items-center justify-center p-12 text-slate-600 hover:border-slate-600 hover:text-slate-400 transition-all cursor-pointer group min-h-[150px]"
+          >
+            <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Plus size={20} />
+            </div>
+            <span className="font-bold text-[10px] tracking-widest uppercase">
+              Añadir trabajo
+            </span>
           </div>
-          <span className="font-bold text-sm tracking-widest uppercase">
-            Añadir trabajo
-          </span>
-        </div>
+        )}
       </div>
+
+      {/* Pagination Portfolio */}
+      {projects.length > itemsPerPage && (
+        <div className="flex justify-center items-center gap-4 py-6">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-500 disabled:opacity-20 hover:text-white transition-all"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            Página {currentPage} de {Math.ceil(projects.length / itemsPerPage)}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(Math.ceil(projects.length / itemsPerPage), p + 1))}
+            disabled={currentPage === Math.ceil(projects.length / itemsPerPage)}
+            className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-500 disabled:opacity-20 hover:text-white transition-all"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
 
       {/* MODAL CREAR PROYECTO */}
       <AnimatePresence>
@@ -610,7 +841,7 @@ function PortfolioView() {
             >
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-2xl font-bold text-white uppercase tracking-tighter">
-                  Nuevo Proyecto
+                  {editingProject ? "Editar Proyecto" : "Nuevo Proyecto"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -620,7 +851,7 @@ function PortfolioView() {
                 </button>
               </div>
 
-              <form onSubmit={handleCreate} className="space-y-6 text-left">
+              <form onSubmit={handleCreateOrUpdate} className="space-y-6 text-left">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">
@@ -686,6 +917,49 @@ function PortfolioView() {
                   />
                 </div>
 
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">
+                    Tecnologías Utilizadas
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {["React", "Next.js", "Tailwind CSS", "TypeScript", "Node.js", "MySQL", "PHP", "Laravel", "WordPress", "Framer Motion"].map((tech) => (
+                      <button
+                        key={tech}
+                        type="button"
+                        onClick={() => {
+                          const techs = formData.technologies.includes(tech)
+                            ? formData.technologies.filter(t => t !== tech)
+                            : [...formData.technologies, tech];
+                          setFormData({ ...formData, technologies: techs });
+                        }}
+                        className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-tighter border transition-all ${formData.technologies.includes(tech)
+                          ? "bg-primary-blue/20 border-primary-blue text-primary-blue"
+                          : "bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700"
+                          }`}
+                      >
+                        {tech}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Otra tecnología..."
+                      className="flex-grow bg-slate-950 border border-slate-800 p-3 rounded-xl text-xs text-white focus:ring-1 focus:ring-primary-blue outline-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const val = (e.target as HTMLInputElement).value.trim();
+                          if (val && !formData.technologies.includes(val)) {
+                            setFormData({ ...formData, technologies: [...formData.technologies, val] });
+                            (e.target as HTMLInputElement).value = '';
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">
                     Imagen del Proyecto
@@ -734,7 +1008,7 @@ function PortfolioView() {
                     ) : (
                       <Check size={20} />
                     )}
-                    {isUploading ? "Subiendo..." : "Crear Proyecto"}
+                    {isUploading ? "Procesando..." : editingProject ? "Guardar Cambios" : "Crear Proyecto"}
                   </button>
                 </div>
               </form>
@@ -747,42 +1021,91 @@ function PortfolioView() {
 }
 
 function TestimoniosView() {
+  const [testimonials, setTestimonials] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchTestimonials = () => {
+    setLoading(true);
+    fetch("/api/admin/testimonials")
+      .then((res) => res.json())
+      .then((data) => {
+        setTestimonials(Array.isArray(data) ? data : []);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  const handleToggleStatus = async (id: number, currentApproved: boolean) => {
+    try {
+      const res = await fetch("/api/admin/testimonials", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, is_approved: !currentApproved }),
+      });
+      if (res.ok) fetchTestimonials();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("¿Eliminar este testimonio permanentemente?")) return;
+    try {
+      const res = await fetch(`/api/admin/testimonials?id=${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) fetchTestimonials();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading && testimonials.length === 0)
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="animate-spin text-primary-blue" />
+      </div>
+    );
+
   return (
-    <div className="space-y-8">
-      <div className="bg-slate-950 border border-slate-800 p-10 rounded-[2.5rem] flex flex-col md:flex-row gap-8 items-center text-left">
-        <div className="w-24 h-24 rounded-3xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500">
-          <Star size={48} fill="currentColor" />
+    <div className="space-y-6">
+      <div className="bg-slate-900/40 border border-slate-800/40 p-6 rounded-2xl flex flex-col md:flex-row gap-6 items-center text-left">
+        <div className="w-12 h-12 rounded-xl bg-yellow-500/5 border border-yellow-500/10 flex items-center justify-center text-yellow-500">
+          <Star size={24} fill="currentColor" />
         </div>
         <div className="flex-grow">
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-sm font-black text-white uppercase tracking-widest mb-1">
             Reseñas y Feedback
           </h2>
-          <p className="text-slate-400 max-w-2xl leading-relaxed">
-            Aquí puedes gestionar lo que dicen tus clientes. No olvides que los
-            testimonios reales con Badges de resultados son los que más venden.
+          <p className="text-slate-500 text-xs leading-relaxed max-w-xl">
+            Gestiona la prueba social. Los testimonios reales con badges de resultados son los que más convierten.
           </p>
         </div>
-        <button className="px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all">
-          Pedir reseña
+        <button className="px-5 py-2.5 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-200 transition-all">
+          Solicitar Reseña
         </button>
       </div>
 
-      <div className="columns-1 md:columns-2 gap-6 space-y-6">
-        <TestimonialItem
-          author="María González"
-          text="El diseño es profesional y realmente convierte..."
-          approved
-        />
-        <TestimonialItem
-          author="Carlos Ruiz"
-          text="Profesionales comprometidos que entienden..."
-          approved
-        />
-        <TestimonialItem
-          author="Ana Martínez"
-          text="La web superó mis expectativas..."
-          approved
-        />
+      <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
+        {testimonials.length > 0 ? (
+          testimonials.map((t) => (
+            <TestimonialItem
+              key={t.id}
+              author={t.client_name}
+              text={t.quote}
+              approved={t.is_approved}
+              onToggle={() => handleToggleStatus(t.id, t.is_approved)}
+              onDelete={() => handleDelete(t.id)}
+            />
+          ))
+        ) : (
+          <div className="col-span-full py-20 text-center text-slate-500 italic">
+            No hay testimonios registrados aún.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -793,25 +1116,45 @@ function SettingsView() {
   const [isSaving, setIsSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchSettings = () => {
+    setLoading(true);
     fetch("/api/admin/settings")
       .then((res) => res.json())
       .then((data) => {
         setSettings(data);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchSettings();
   }, []);
+
+  const handleChange = (key: string, value: string) => {
+    setSettings((prev) =>
+      prev.map((s) => (s.setting_key === key ? { ...s, setting_value: value } : s))
+    );
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // En una implementación real, mapearíamos los inputs.
-      // Aquí simplificamos actualizando uno por uno o enviando el objeto completo.
-      // Por ahora, simulamos el éxito visual.
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Guardar cada setting que haya cambiado. 
+      // Para optimizar se podría enviar todo en un solo batch si el API lo soporta.
+      // Por ahora usamos el endpoint PATCH que ya existe para cada uno en paralelo.
+      const promises = settings.map((s) =>
+        fetch("/api/admin/settings", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: s.setting_key, value: s.setting_value }),
+        })
+      );
+
+      await Promise.all(promises);
       alert("Configuración guardada con éxito");
     } catch (err) {
       console.error(err);
+      alert("Error al guardar la configuración");
     } finally {
       setIsSaving(false);
     }
@@ -834,16 +1177,23 @@ function SettingsView() {
           <div className="space-y-4">
             <InputGroup
               label="WhatsApp Principal"
-              defaultValue={getVal("whatsapp_number")}
+              value={getVal("whatsapp_number")}
+              onChange={(v: string) => handleChange("whatsapp_number", v)}
             />
             <InputGroup
               label="Email de Negocio"
-              defaultValue={getVal("contact_email")}
+              value={getVal("contact_email")}
+              onChange={(v: string) => handleChange("contact_email", v)}
             />
-            <InputGroup
-              label="Dirección de Oficina"
-              defaultValue="Sevilla, España"
-            />
+            <div className="pt-2">
+              <label className="text-[10px] font-black text-slate-600 uppercase mb-2 block tracking-widest">
+                Estado del Botón
+              </label>
+              <div className="flex items-center gap-2 text-green-500 text-sm font-bold">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                Visible en todas las páginas
+              </div>
+            </div>
           </div>
         </SettingsCard>
 
@@ -851,36 +1201,38 @@ function SettingsView() {
           <div className="space-y-4">
             <InputGroup
               label="Título Meta (Home)"
-              defaultValue={getVal("seo_home_title")}
+              value={getVal("seo_home_title")}
+              onChange={(v: string) => handleChange("seo_home_title", v)}
             />
             <InputGroup
               label="Meta Descripción"
-              defaultValue={getVal("seo_home_description")}
+              value={getVal("seo_home_description")}
+              onChange={(v: string) => handleChange("seo_home_description", v)}
             />
             <div className="pt-2">
-              <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">
+              <label className="text-[10px] font-black text-slate-600 uppercase mb-2 block tracking-widest">
                 Indexación Google
               </label>
               <div className="flex items-center gap-2 text-green-500 text-sm font-bold">
-                <Check size={16} /> Activa y rastreable
+                <Check size={16} /> Activa y rastreable (Sitemap OK)
               </div>
             </div>
           </div>
         </SettingsCard>
       </div>
 
-      <div className="flex justify-end p-6 bg-slate-900/50 border border-slate-800 rounded-3xl">
+      <div className="flex justify-end p-4 bg-slate-900/30 border border-slate-800/50 rounded-xl">
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 px-8 py-4 bg-primary-blue text-white font-bold rounded-2xl shadow-xl shadow-blue-500/20 hover:scale-105 transition-all disabled:opacity-50"
+          className="flex items-center gap-3 px-6 py-3 bg-primary-blue text-white font-black uppercase tracking-widest text-[10px] rounded-lg shadow-lg shadow-blue-500/10 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
         >
           {isSaving ? (
-            <RefreshCw className="animate-spin" size={20} />
+            <RefreshCw className="animate-spin" size={14} />
           ) : (
-            <Save size={20} />
+            <Save size={14} />
           )}
-          {isSaving ? "Guardando..." : "Guardar todos los cambios"}
+          {isSaving ? "Guardando..." : "Guardar Cambios"}
         </button>
       </div>
     </div>
@@ -889,16 +1241,16 @@ function SettingsView() {
 
 // --- MICRO UI COMPONENTS ---
 
-function StatCard({ label, value, subValue }: any) {
+function StatCard({ label, value, subValue, highlight }: any) {
   return (
-    <div className="bg-slate-900 border border-slate-800/80 p-8 rounded-[2rem] hover:border-primary-blue/30 transition-all group">
-      <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-primary-blue transition-colors">
+    <div className={`bg-slate-900/40 border p-4 rounded-xl transition-all group ${highlight ? "border-primary-blue/20 bg-primary-blue/5" : "border-slate-800/60"}`}>
+      <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1 group-hover:text-primary-blue transition-colors">
         {label}
       </p>
       <div className="flex items-baseline gap-2">
-        <h4 className="text-4xl font-bold text-white">{value}</h4>
+        <h4 className="text-xl font-black text-white">{value}</h4>
       </div>
-      <p className="text-slate-600 text-[10px] font-bold mt-2 uppercase">
+      <p className="text-slate-700 text-[9px] font-bold mt-1 uppercase tracking-tighter">
         {subValue}
       </p>
     </div>
@@ -920,55 +1272,104 @@ function RecentLead({ name, service, time, color }: any) {
   );
 }
 
-function ProjectCard({ title, category, status, image }: any) {
+function ProjectCard({ title, category, status, image, technologies, onToggleStatus, onEdit, onDelete }: any) {
+  // Asegurarnos de que technologies sea un array
+  const techList = Array.isArray(technologies)
+    ? technologies
+    : typeof technologies === 'string'
+      ? JSON.parse(technologies || '[]')
+      : [];
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-6 hover:border-primary-blue/30 transition-all group flex flex-col">
-      <div className="w-full h-48 bg-slate-950 rounded-2xl mb-6 relative overflow-hidden group-hover:scale-[1.02] transition-transform">
+    <div className="bg-slate-900/40 border border-slate-800/60 rounded-xl p-4 hover:border-primary-blue/30 transition-all group flex flex-col">
+      <div className="w-full h-32 bg-slate-950 rounded-lg mb-4 relative overflow-hidden">
         {image ? (
-          <img src={image} alt={title} className="w-full h-full object-cover" />
+          <img src={image} alt={title} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-blue/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-blue/5 to-transparent" />
         )}
-        <div className="absolute bottom-4 left-4 flex gap-2">
-          <span className="text-[10px] font-bold bg-slate-900/60 backdrop-blur-md text-white px-3 py-1 rounded-full border border-white/10 uppercase">
-            {category}
-          </span>
+        <div className="absolute top-2 right-2">
+          <div className={`w-2 h-2 rounded-full ${status === "Publicado" ? "bg-green-500" : "bg-yellow-500"} shadow-lg`} />
         </div>
       </div>
-      <h4 className="text-lg font-bold text-white mb-4 line-clamp-1">
-        {title}
-      </h4>
-      <div className="flex justify-between items-center mt-auto">
-        <span className="text-[10px] font-bold text-green-500 flex items-center gap-1.5 uppercase tracking-widest">
-          <div className="w-1 h-1 rounded-full bg-green-500" /> {status}
+      <div className="flex-grow">
+        <span className="text-[9px] font-black text-primary-blue uppercase tracking-tighter mb-1 block">
+          {category}
         </span>
-        <button className="text-slate-500 hover:text-white transition-colors">
-          <Settings size={18} />
+        <h4 className="text-sm font-bold text-white mb-2 line-clamp-1">
+          {title}
+        </h4>
+        <div className="flex flex-wrap gap-1 mb-4">
+          {techList.slice(0, 3).map((tech: string, i: number) => (
+            <span key={i} className="text-[8px] px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded-md font-bold uppercase">
+              {tech}
+            </span>
+          ))}
+          {techList.length > 3 && (
+            <span className="text-[8px] px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded-md font-bold uppercase">
+              +{techList.length - 3}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="flex justify-between items-center pt-3 border-t border-slate-800/40">
+        <div className="flex gap-4">
+          <button
+            onClick={onToggleStatus}
+            className="text-[9px] font-black text-slate-500 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-1.5"
+          >
+            <div className={`w-1 h-1 rounded-full ${status === "Publicado" ? "bg-green-500" : "bg-yellow-500"}`} />
+            {status === "Publicado" ? "Ocultar" : "Publicar"}
+          </button>
+          <button
+            onClick={onEdit}
+            className="text-[9px] font-black text-slate-500 hover:text-primary-blue uppercase tracking-widest transition-colors flex items-center gap-1"
+          >
+            <Edit size={10} /> Editar
+          </button>
+        </div>
+        <button
+          onClick={onDelete}
+          className="text-slate-600 hover:text-red-500 transition-colors"
+        >
+          <Trash2 size={14} />
         </button>
       </div>
     </div>
   );
 }
 
-function TestimonialItem({ author, text, approved }: any) {
+function TestimonialItem({ author, text, approved, onToggle, onDelete }: any) {
   return (
-    <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2rem] text-left break-inside-avoid">
-      <div className="flex items-center gap-1 mb-4">
+    <div className={`bg-slate-900/30 border p-5 rounded-xl text-left break-inside-avoid transition-all ${approved ? "border-slate-800/50" : "border-yellow-500/20 bg-yellow-500/5"}`}>
+      {!approved && (
+        <div className="mb-3 text-[9px] font-black text-yellow-500 uppercase tracking-widest flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+          Revisión
+        </div>
+      )}
+      <div className="flex items-center gap-0.5 mb-3 text-yellow-500/80">
         {[...Array(5)].map((_, i) => (
-          <Star key={i} size={14} className="fill-yellow-500 text-yellow-500" />
+          <Star key={i} size={10} className="fill-current" />
         ))}
       </div>
-      <p className="text-slate-300 italic text-sm leading-relaxed mb-6">
+      <p className="text-slate-400 italic text-xs leading-relaxed mb-4">
         "{text}"
       </p>
-      <div className="flex justify-between items-center">
-        <span className="font-bold text-white text-sm">/ {author}</span>
-        <div className="flex gap-2">
-          <button className="text-[10px] font-bold text-slate-500 hover:text-white uppercase transition-colors">
-            Editar
+      <div className="flex justify-between items-center pt-3 border-t border-slate-800/40">
+        <span className="font-black text-slate-300 text-[10px] uppercase tracking-tighter">{author}</span>
+        <div className="flex gap-3">
+          <button
+            onClick={onToggle}
+            className={`text-[9px] font-black uppercase transition-colors ${approved ? "text-slate-600 hover:text-white" : "text-green-500 hover:text-white"}`}
+          >
+            {approved ? "Ocultar" : "Aprobar"}
           </button>
-          <button className="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase transition-colors">
-            Ocultar
+          <button
+            onClick={onDelete}
+            className="text-[9px] font-black text-slate-800 hover:text-red-500 uppercase transition-colors"
+          >
+            Borrar
           </button>
         </div>
       </div>
@@ -978,9 +1379,9 @@ function TestimonialItem({ author, text, approved }: any) {
 
 function SettingsCard({ title, children }: any) {
   return (
-    <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] h-full text-left">
-      <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
-        <div className="w-1.5 h-6 bg-primary-blue rounded-full" />
+    <div className="bg-slate-900/30 border border-slate-800/50 p-6 rounded-xl h-full text-left">
+      <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-3">
+        <div className="w-0.5 h-3 bg-primary-blue" />
         {title}
       </h3>
       {children}
@@ -988,16 +1389,17 @@ function SettingsCard({ title, children }: any) {
   );
 }
 
-function InputGroup({ label, defaultValue }: any) {
+function InputGroup({ label, value, onChange }: any) {
   return (
-    <div className="space-y-1.5">
-      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+    <div className="space-y-2">
+      <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">
         {label}
       </label>
       <input
         type="text"
-        defaultValue={defaultValue}
-        className="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-slate-950 border border-slate-800 p-4 rounded-2xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
       />
     </div>
   );

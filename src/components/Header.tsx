@@ -32,6 +32,8 @@ const Header: React.FC<HeaderProps> = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  if (pathname.startsWith("/admin") || pathname.startsWith("/login")) return null;
+
   const navLinks: NavLink[] = [
     { label: "Inicio", href: "#inicio" },
     { label: "Servicios", href: "#servicios" },

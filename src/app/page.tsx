@@ -44,7 +44,6 @@ export default function Home() {
     return (
         <div className="min-h-screen bg-white">
             <Hero />
-
             <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
                 <ParaQuienEs />
             </Suspense>

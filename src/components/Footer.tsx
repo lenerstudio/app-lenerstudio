@@ -3,10 +3,15 @@
 import React from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export type FooterProps = unknown;
 
 const Footer: React.FC<FooterProps> = () => {
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/admin") || pathname.startsWith("/login")) return null;
+
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
     if (element) {

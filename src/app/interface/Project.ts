@@ -1,9 +1,15 @@
 interface Project {
   id: number;
   title: string;
+  slug: string;
   description: string;
-  imageUrl: string;
-  // Agrega aquí las propiedades que devuelve tu API
+  main_image: string;
+  category: string;
+  technologies: string[] | string;
+  live_url: string;
+  is_published: boolean;
+  display_order: number;
+  created_at: string;
 }
 
 export type { Project };
