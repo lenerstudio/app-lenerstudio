@@ -103,6 +103,7 @@ const Header: React.FC<HeaderProps> = () => {
               height={48}
               priority
               className="h-12 w-auto object-contain"
+              style={{ width: "auto" }}
             />
           </motion.button>
 

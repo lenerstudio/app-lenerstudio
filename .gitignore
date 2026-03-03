@@ -18,7 +18,7 @@ dist-ssr
 /out/
 /database_schema.sql
 /scripts
-
+/prompts
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
