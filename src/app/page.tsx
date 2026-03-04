@@ -12,6 +12,9 @@ const ParaQuienEs = dynamic(() => import("@/components/ParaQuienEs"), {
 const Problema = dynamic(() => import("@/components/Problema"), {
     loading: () => <SectionSkeleton minHeight="400px" />,
 });
+const InvisibleAImparable = dynamic(() => import("@/components/InvisibleAImparable"), {
+    loading: () => <SectionSkeleton minHeight="600px" />,
+});
 const Soluciones = dynamic(() => import("@/components/Soluciones"), {
     loading: () => <SectionSkeleton minHeight="800px" />,
 });
@@ -62,6 +65,9 @@ export default function Home() {
             </Suspense>
             <Suspense fallback={<SectionSkeleton minHeight="400px" />}>
                 <Problema />
+            </Suspense>
+            <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
+                <InvisibleAImparable />
             </Suspense>
             <Suspense fallback={<SectionSkeleton minHeight="800px" />}>
                 <Soluciones />
