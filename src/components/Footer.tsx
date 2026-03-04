@@ -13,8 +13,6 @@ const Footer: React.FC<FooterProps> = () => {
   const [mounted, setMounted] = useState(false);
   const [year, setYear] = useState<number | null>(null);
 
-
-
   useEffect(() => {
     setMounted(true);
     setYear(new Date().getFullYear());
@@ -24,9 +22,8 @@ const Footer: React.FC<FooterProps> = () => {
       .catch(() => { });
   }, []);
 
-  if (!mounted) return null;
-
-  if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
+  // Ocultar en rutas de admin/login — pero solo tras montar para evitar mismatch de hidratación
+  if (mounted && (pathname.startsWith("/admin") || pathname.startsWith("/login"))) {
     return null;
   }
 
@@ -53,10 +50,10 @@ const Footer: React.FC<FooterProps> = () => {
 
   return (
     <footer suppressHydrationWarning className="bg-gray-900 text-white py-12 border-t border-gray-800">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
+      <div suppressHydrationWarning className="container mx-auto px-4">
+        <div suppressHydrationWarning className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
           {/* Company Info */}
-          <div className="md:col-span-1">
+          <div suppressHydrationWarning className="md:col-span-1">
             <h2 className="text-2xl font-bold text-primary-blue mb-4">
               Lener Studio
             </h2>
@@ -65,7 +62,7 @@ const Footer: React.FC<FooterProps> = () => {
               digitales que convierten visitas en clientes.
             </p>
             {/* Redes Sociales dinámicas */}
-            <div className="flex gap-4">
+            <div suppressHydrationWarning className="flex gap-4">
               {mounted && settings.social_facebook && (
                 <a href={settings.social_facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary-blue hover:text-white transition-all" aria-label="Facebook">
                   <Facebook size={18} />
@@ -157,8 +154,8 @@ const Footer: React.FC<FooterProps> = () => {
         {/* Copyright + legal bottom bar */}
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-sm">
-              &copy; {year ?? ""} Lener Studio. Todos los derechos reservados.
+            <p suppressHydrationWarning className="text-gray-500 text-sm">
+              &copy; {year ?? new Date().getFullYear()} Lener Studio. Todos los derechos reservados.
             </p>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-1">
               {legalLinks.map((link) => (

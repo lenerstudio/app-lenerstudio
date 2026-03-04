@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
 import ClientOnlyComponents from "@/components/ClientOnlyComponents";
+import { GoogleTagManager } from '@next/third-parties/google'
 
 const inter = Inter({
     subsets: ["latin"],
@@ -94,7 +95,7 @@ const jsonLd = {
         "longitude": -5.9845
     },
     "url": "https://lenerstudio.com",
-    "telephone": "+34000000000",
+    "telephone": "+624432245",
     "priceRange": "$$",
     "openingHoursSpecification": {
         "@type": "OpeningHoursSpecification",
@@ -130,8 +131,12 @@ export default function RootLayout({
                 <meta property="og:description" content="Transformo páginas web en sistemas que generan clientes." />
                 <meta property="og:image" content="https://lenerstudio.com/logopag.svg" />
                 <meta property="og:url" content="https://www.lenerstudio.com" />
+
+
             </head>
-            <body className={`${inter.variable} font-sans antialiased bg-white text-gray-900`}>
+            <body suppressHydrationWarning className={`${inter.variable} font-sans antialiased bg-white text-gray-900`}>
+                <GoogleTagManager gtmId="GTM-PT5FM5CJ" />
+
                 <a
                     href="#contenido-principal"
                     className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:px-6 focus:py-3 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:font-semibold focus:shadow-xl"
@@ -139,8 +144,9 @@ export default function RootLayout({
                     Saltar al contenido principal
                 </a>
 
-                <Header />
+
                 <Providers>
+                    <Header />
                     <main id="contenido-principal">
                         {children}
                     </main>

@@ -1,5 +1,5 @@
 ﻿"use client";
-
+export const dynamic = 'force-dynamic';
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -218,7 +218,7 @@ export default function AdminDashboard() {
         <header className="h-16 border-b border-slate-800/40 flex items-center justify-between px-6 bg-slate-950/40 backdrop-blur-xl z-10">
           <div className="flex items-center gap-4">
             <h1 className="text-sm font-bold uppercase tracking-widest text-white/90">
-              {activeView.replace("-", " ")}
+              {activeView.replace("_", " ")}
             </h1>
           </div>
 
@@ -245,8 +245,8 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              {activeView === "overview" && <OverviewView setActiveView={setActiveView} />}
-              {activeView === "leads" && <LeadsView />}
+              {activeView === "overview" && <OverviewView setActiveView={setActiveView} setStats={setStats} />}
+              {activeView === "leads" && <LeadsView setStats={setStats} />}
               {activeView === "portfolio" && <PortfolioView />}
               {activeView === "testimonials" && <TestimoniosView />}
               {activeView === "settings" && <SettingsView />}
@@ -295,7 +295,7 @@ function NavItem({ icon, label, active, badge, collapsed, onClick }: any) {
   );
 }
 
-function OverviewView({ setActiveView }: { setActiveView: (v: string) => void }) {
+function OverviewView({ setActiveView, setStats }: { setActiveView: (v: ViewType) => void, setStats?: (s: any) => void }) {
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [seedState, setSeedState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -307,6 +307,7 @@ function OverviewView({ setActiveView }: { setActiveView: (v: string) => void })
       .then((data) => {
         setAnalytics(data);
         setLoading(false);
+        if (data.summary && setStats) setStats(data.summary);
       })
       .catch(() => setLoading(false));
   }, []);
@@ -343,8 +344,8 @@ function OverviewView({ setActiveView }: { setActiveView: (v: string) => void })
   };
   const chartData = analytics?.viewsByDay || [];
 
-  const reversedChart = [...chartData].reverse();
-  const maxVal = Math.max(...reversedChart.map((d: any) => d.count), 1);
+  const chartToRender = [...chartData];
+  const maxVal = Math.max(...chartToRender.map((d: any) => d.count || 0), 1);
 
   return (
     <div className="space-y-6">
@@ -443,8 +444,8 @@ function OverviewView({ setActiveView }: { setActiveView: (v: string) => void })
             </div>
           </div>
           <div className="h-48 flex items-end gap-2 px-2">
-            {reversedChart.length > 0 ? (
-              reversedChart.map((day: any, i: number) => (
+            {chartToRender.length > 0 ? (
+              chartToRender.map((day: any, i: number) => (
                 <div
                   key={i}
                   className="flex-grow flex flex-col items-center gap-2 group"
@@ -452,7 +453,7 @@ function OverviewView({ setActiveView }: { setActiveView: (v: string) => void })
                   <div className="relative w-full">
                     <motion.div
                       initial={{ height: 0 }}
-                      animate={{ height: `${(day.count / maxVal) * 100}%` }}
+                      animate={{ height: `${((day.count || 0) / maxVal) * 100}%` }}
                       className="w-full bg-primary-blue/20 group-hover:bg-primary-blue/50 rounded-t-md transition-colors cursor-pointer min-h-[2px]"
                     />
                   </div>
@@ -526,7 +527,7 @@ function Last7Days() {
 
 import { useToast } from "@/components/ui/use-toast";
 
-function LeadsView() {
+function LeadsView({ setStats }: { setStats?: (s: any) => void }) {
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
@@ -549,6 +550,13 @@ function LeadsView() {
         }
         setLeads(data);
         setTotalLeads(data.length);
+
+        // Sincronizar stats con el sidebar si recibimos nuevos datos
+        if (setStats) {
+          const nuevoCount = data.filter((l: any) => l.status === 'nuevo').length;
+          setStats((prev: any) => ({ ...prev, newLeads: nuevoCount, totalLeads: data.length }));
+        }
+
         if (!silent) setLoading(false);
       })
       .catch(() => { if (!silent) setLoading(false); });
@@ -570,9 +578,14 @@ function LeadsView() {
         body: JSON.stringify({ id, status: newStatus }),
       });
       if (res.ok) {
-        setLeads((prev: any) =>
-          prev.map((l: any) => (l.id === id ? { ...l, status: newStatus } : l))
-        );
+        setLeads((prev: any) => {
+          const updated = prev.map((l: any) => (l.id === id ? { ...l, status: newStatus } : l));
+          if (setStats) {
+            const nuevoCount = updated.filter((l: any) => l.status === 'nuevo').length;
+            setStats((prevStats: any) => ({ ...prevStats, newLeads: nuevoCount }));
+          }
+          return updated;
+        });
       }
     } catch (err) {
       console.error(err);
