@@ -4,7 +4,24 @@ const nextConfig = {
     output: 'standalone',
     typescript: {
         ignoreBuildErrors: true,
-    }
+    },
+    images: {
+        formats: ['image/avif', 'image/webp'],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'images.unsplash.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'ui-avatars.com',
+            },
+        ],
+        minimumCacheTTL: 86400, // 24h cache
+    },
+    experimental: {
+        optimizePackageImports: ['lucide-react', 'framer-motion'],
+    },
 };
 
 export default nextConfig;

@@ -10,45 +10,45 @@ export interface TestimoniosProps {
 }
 
 const Testimonios: React.FC<TestimoniosProps> = () => {
-  const testimonials: Testimonio[] = [
+  const testimonials = [
     {
       name: "María González",
-      business: "Coaching Personal",
+      business: "Life & Business Coaching",
+      role: "Fundadora",
+      city: "Madrid",
       quote:
         "Desde que lanzó mi web con Lener Studio, mis contactos aumentaron un 150%. El diseño es profesional y realmente convierte visitantes en clientes.",
-      result: "+150% contactos",
-      avatar:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&q=75&fm=webp&fit=crop&crop=face",
+      result: "+150% contactos en los primeros 3 meses",
       rating: 5,
     },
     {
       name: "Carlos Ruiz",
-      business: "Consultoría IT",
+      business: "TechSolutions IT",
+      role: "Director de Operaciones",
+      city: "Barcelona",
       quote:
         "Profesionales comprometidos que entienden las necesidades del negocio. Mi web ahora refleja la calidad de mis servicios y genera confianza inmediata.",
-      result: "+40% conversión",
-      avatar:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&q=75&fm=webp&fit=crop&crop=face",
+      result: "+40% conversión en los primeros 3 meses",
       rating: 5,
     },
     {
       name: "Ana Martínez",
-      business: "Estudio de Diseño",
+      business: "AM Estudio Interiorismo",
+      role: "Directora Creativa",
+      city: "Valencia",
       quote:
         "La web que me crearon superó todas mis expectativas. Es rápida, hermosa y fácil de gestionar. Mis clientes me felicitan constantemente por ella.",
-      result: "+200% visibilidad",
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=75&fm=webp&fit=crop&crop=face",
+      result: "+200% visibilidad en los primeros 3 meses",
       rating: 5,
     },
     {
       name: "Roberto Sánchez",
-      business: "Abogados & Asociados",
+      business: "Sánchez & Asociados",
+      role: "Socio Principal",
+      city: "Sevilla",
       quote:
         "Invertir en una web profesional fue la mejor decisión. Ahora recibo consultas de clientes que nunca hubieran conocido mi despacho de otra forma.",
-      result: "+80% leads cualificados",
-      avatar:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=75&fm=webp&fit=crop&crop=face",
+      result: "+80% leads en los primeros 3 meses",
       rating: 5,
     },
   ];
@@ -109,21 +109,26 @@ const Testimonios: React.FC<TestimoniosProps> = () => {
 
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <img
-                      src={testimonial.avatar}
-                      alt={testimonial.name}
-                      width={56}
-                      height={56}
-                      className="w-14 h-14 rounded-2xl object-cover shadow-md"
-                    />
-                    <div className="absolute -bottom-1.5 -right-1.5 w-5 h-5 bg-primary-blue rounded-lg flex items-center justify-center text-white">
-                      <Check size={10} strokeWidth={3} />
+                    <div
+                      className="w-14 h-14 rounded-2xl shadow-md flex items-center justify-center text-white font-black text-lg select-none"
+                      style={{ background: `hsl(${(testimonial.name.charCodeAt(0) * 37) % 360}, 65%, 45%)` }}
+                      aria-label={`Foto de ${testimonial.name}`}
+                    >
+                      {testimonial.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
                     </div>
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900 text-base leading-tight">{testimonial.name}</div>
-                    <div className="text-xs text-gray-500 font-medium">
-                      {testimonial.business}
+                    <div className="font-bold text-gray-900 text-base leading-tight flex items-center gap-1">
+                      {testimonial.name}
+                      <div className="w-[14px] h-[14px] bg-blue-500 rounded-full flex items-center justify-center text-white ml-0.5" title="Perfil Verificado">
+                        <Check size={8} strokeWidth={4} />
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-600 font-medium mt-0.5">
+                      {testimonial.role} en {testimonial.business}
+                    </div>
+                    <div className="text-[11px] text-gray-400 mt-1 flex items-center">
+                      📍 {testimonial.city}
                     </div>
                   </div>
                 </div>

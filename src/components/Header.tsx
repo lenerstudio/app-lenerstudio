@@ -39,6 +39,8 @@ const Header: React.FC<HeaderProps> = () => {
     { label: "Servicios", href: "#servicios" },
     { label: "Casos de Éxito", href: "#testimonios" },
     { label: "Portafolio", href: "/portafolio", isRoute: true },
+    { label: "Precios", href: "/precios", isRoute: true },
+    { label: "Blog", href: "/blog", isRoute: true },
     { label: "Garantía", href: "#garantia" },
     { label: "Contacto", href: "#contacto" },
   ];
@@ -78,11 +80,11 @@ const Header: React.FC<HeaderProps> = () => {
     }, 100);
   };
 
-  const isPortafolio = pathname === "/portafolio";
+  const isSubpage = pathname !== "/";
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled || isPortafolio
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled || isSubpage
         ? "bg-gray-900/90 backdrop-blur-md shadow-sm py-4"
         : "bg-transparent py-4"
         }`}
@@ -114,10 +116,10 @@ const Header: React.FC<HeaderProps> = () => {
                 key={link.href}
                 onClick={() => handleNavClick(link)}
                 aria-label={`Ir a ${link.label}`}
-                aria-current={link.isRoute && isPortafolio ? "page" : undefined}
-                className={`nav-link-premium text-sm font-medium transition-colors duration-300 flex items-center gap-1.5 ${link.isRoute && isPortafolio
+                aria-current={link.isRoute && pathname === link.href ? "page" : undefined}
+                className={`nav-link-premium text-sm font-medium transition-colors duration-300 flex items-center gap-1.5 ${link.isRoute && pathname === link.href
                   ? "text-emerald-400"
-                  : isScrolled || isPortafolio
+                  : isScrolled || isSubpage
                     ? "text-cyan-500 hover:text-emerald-400"
                     : "text-white hover:text-emerald-400"
                   }`}
@@ -131,7 +133,7 @@ const Header: React.FC<HeaderProps> = () => {
             <Button
               onClick={() => handleNavClick({ label: "Contacto", href: "#contacto" })}
               aria-label="Agendar llamada diagnóstica - ir a sección de contacto"
-              className="bg-primary-blue hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md"
+              className="bg-primary-blue hover:bg-blue-700 text-white px-6 py-2 rounded-full shadow-md"
             >
               Agendar Llamada
             </Button>
@@ -139,7 +141,7 @@ const Header: React.FC<HeaderProps> = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className={`md:hidden p-2 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${isScrolled || isMobileMenuOpen || isPortafolio
+            className={`md:hidden p-2 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${isScrolled || isMobileMenuOpen || isSubpage
               ? "text-gray-200"
               : "text-white"
               }`}

@@ -3,6 +3,8 @@ import React from "react";
 export interface Testimonio {
   name: string;
   business: string;
+  role: string;
+  city: string;
   quote: string;
   result: string;
   avatar: string;

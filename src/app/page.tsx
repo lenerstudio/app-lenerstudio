@@ -2,6 +2,10 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import Hero from "@/components/Hero";
 
+const SocialProofBar = dynamic(() => import("@/components/SocialProofBar"), {
+    loading: () => <SectionSkeleton minHeight="100px" />,
+});
+
 const ParaQuienEs = dynamic(() => import("@/components/ParaQuienEs"), {
     loading: () => <SectionSkeleton minHeight="500px" />,
 });
@@ -17,6 +21,9 @@ const Beneficios = dynamic(() => import("@/components/Beneficios"), {
 const Oferta = dynamic(() => import("@/components/Oferta"), {
     loading: () => <SectionSkeleton minHeight="500px" />,
 });
+const CasosDeExito = dynamic(() => import("@/components/CasosDeExito"), {
+    loading: () => <SectionSkeleton minHeight="600px" />,
+});
 const Testimonios = dynamic(() => import("@/components/Testimonios"), {
     loading: () => <SectionSkeleton minHeight="500px" />,
 });
@@ -25,6 +32,9 @@ const Autoridad = dynamic(() => import("@/components/Autoridad"), {
 });
 const Garantia = dynamic(() => import("@/components/Garantia"), {
     loading: () => <SectionSkeleton minHeight="500px" />,
+});
+const FaqSection = dynamic(() => import("@/components/FaqSection"), {
+    loading: () => <SectionSkeleton minHeight="600px" />,
 });
 const ContactoFinal = dynamic(() => import("@/components/ContactoFinal"), {
     loading: () => <SectionSkeleton minHeight="700px" />,
@@ -44,6 +54,9 @@ export default function Home() {
     return (
         <div className="min-h-screen bg-white">
             <Hero />
+            <Suspense fallback={<SectionSkeleton minHeight="100px" />}>
+                <SocialProofBar />
+            </Suspense>
             <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
                 <ParaQuienEs />
             </Suspense>
@@ -59,6 +72,9 @@ export default function Home() {
             <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
                 <Oferta />
             </Suspense>
+            <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
+                <CasosDeExito />
+            </Suspense>
             <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
                 <Testimonios />
             </Suspense>
@@ -67,6 +83,9 @@ export default function Home() {
             </Suspense>
             <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
                 <Garantia />
+            </Suspense>
+            <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
+                <FaqSection />
             </Suspense>
             <Suspense fallback={<SectionSkeleton minHeight="700px" />}>
                 <ContactoFinal />

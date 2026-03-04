@@ -3,6 +3,8 @@
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import MarkdownEditor from "@/components/MarkdownEditor";
+import MediaLibrary from "@/components/MediaLibrary";
 import {
   Loader2,
   LogOut,
@@ -25,6 +27,14 @@ import {
   ChevronRight,
   Edit,
   Trash2,
+  BookOpen,
+  Megaphone,
+  DollarSign,
+  Globe,
+  X,
+  ToggleLeft,
+  ToggleRight,
+  ImagePlus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -33,7 +43,11 @@ type ViewType =
   | "leads"
   | "portfolio"
   | "testimonials"
-  | "settings";
+  | "settings"
+  | "blog"
+  | "popups"
+  | "pricing"
+  | "media";
 import { Project } from "../interface/Project";
 
 export default function AdminDashboard() {
@@ -124,13 +138,43 @@ export default function AdminDashboard() {
             collapsed={!isSidebarOpen}
             onClick={() => setActiveView("testimonials")}
           />
-          <div className="my-4 border-t border-slate-800/40 mx-2" />
+          <div className="my-3 border-t border-slate-800/40 mx-2" />
+          <NavItem
+            icon={<BookOpen size={18} />}
+            label="Blog"
+            active={activeView === "blog"}
+            collapsed={!isSidebarOpen}
+            onClick={() => setActiveView("blog")}
+          />
+          <NavItem
+            icon={<Megaphone size={18} />}
+            label="Popups"
+            active={activeView === "popups"}
+            collapsed={!isSidebarOpen}
+            onClick={() => setActiveView("popups")}
+          />
+          <NavItem
+            icon={<DollarSign size={18} />}
+            label="Precios"
+            active={activeView === "pricing"}
+            collapsed={!isSidebarOpen}
+            onClick={() => setActiveView("pricing")}
+          />
+          <div className="my-3 border-t border-slate-800/40 mx-2" />
           <NavItem
             icon={<Settings size={18} />}
             label="Configuración & SEO"
             active={activeView === "settings"}
             collapsed={!isSidebarOpen}
             onClick={() => setActiveView("settings")}
+          />
+          <div className="my-3 border-t border-slate-800/40 mx-2" />
+          <NavItem
+            icon={<ImagePlus size={18} />}
+            label="Medios"
+            active={activeView === "media"}
+            collapsed={!isSidebarOpen}
+            onClick={() => setActiveView("media")}
           />
         </nav>
 
@@ -183,6 +227,10 @@ export default function AdminDashboard() {
               {activeView === "portfolio" && <PortfolioView />}
               {activeView === "testimonials" && <TestimoniosView />}
               {activeView === "settings" && <SettingsView />}
+              {activeView === "blog" && <BlogView />}
+              {activeView === "popups" && <PopupsView />}
+              {activeView === "pricing" && <PricingView />}
+              {activeView === "media" && <MediaView />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -225,6 +273,8 @@ function NavItem({ icon, label, active, badge, collapsed, onClick }: any) {
 function OverviewView() {
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [seedState, setSeedState] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [seedResults, setSeedResults] = useState<any[]>([]);
 
   useEffect(() => {
     fetch("/api/admin/analytics")
@@ -235,6 +285,24 @@ function OverviewView() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  const runSeed = async () => {
+    setSeedState("loading");
+    setSeedResults([]);
+    try {
+      const res = await fetch("/api/admin/seed", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSeedResults(data.results || []);
+        setSeedState("done");
+      } else {
+        setSeedState("error");
+        setSeedResults([{ table: "error", inserted: 0, skipped: 0, error: data.error || "Error desconocido" }]);
+      }
+    } catch {
+      setSeedState("error");
+    }
+  };
 
   if (loading)
     return (
@@ -255,6 +323,45 @@ function OverviewView() {
 
   return (
     <div className="space-y-6">
+      {/* Seed panel - only show while not done or while results are shown */}
+      <div className="bg-gradient-to-r from-slate-900/80 to-blue-900/20 border border-blue-500/20 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+            <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Datos de ejemplo</span>
+          </div>
+          <p className="text-sm font-semibold text-slate-300">Cargar datos de ejemplo en Blog, Popup y Precios</p>
+          <p className="text-[11px] text-slate-600 mt-0.5">Solo inserta registros que no existan. Es seguro ejecutarlo varias veces.</p>
+        </div>
+        <div className="shrink-0 flex flex-col items-end gap-2">
+          <button
+            onClick={runSeed}
+            disabled={seedState === "loading"}
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-blue-500 transition-all disabled:opacity-50 shadow-lg shadow-blue-500/20"
+          >
+            {seedState === "loading" ? (
+              <><Loader2 size={14} className="animate-spin" /> Insertando...</>
+            ) : seedState === "done" ? (
+              <><Check size={14} /> Completado</>
+            ) : (
+              <><Plus size={14} /> Cargar datos de ejemplo</>
+            )}
+          </button>
+          {seedResults.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-end">
+              {seedResults.map((r: any) => (
+                <div key={r.table} className={`text-[9px] font-black px-2.5 py-1 rounded-full border uppercase ${r.error ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-green-500/10 text-green-400 border-green-500/20"}`}>
+                  {r.error
+                    ? `${r.table}: ERROR`
+                    : `${r.table}: +${r.inserted} / ${r.skipped} ya existían`
+                  }
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard
           label="Leads Totales"
@@ -278,6 +385,7 @@ function OverviewView() {
           subValue="Rendimiento"
         />
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800/40 p-6 rounded-2xl">
@@ -1111,54 +1219,103 @@ function TestimoniosView() {
   );
 }
 
-function SettingsView() {
-  const [settings, setSettings] = useState<any[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
+// Defaults para todas las keys que usamos en la UI
+const SETTINGS_DEFAULTS: Record<string, string> = {
+  whatsapp_number: "",
+  contact_email: "",
+  seo_home_title: "",
+  seo_home_description: "",
+  social_facebook: "",
+  social_instagram: "",
+  social_linkedin: "",
+  social_twitter: "",
+  social_whatsapp: "",
+};
 
-  const fetchSettings = () => {
+function SettingsView() {
+  // Usamos un Record en lugar de array para simplificar los accesos
+  const [settings, setSettings] = useState<Record<string, string>>(SETTINGS_DEFAULTS);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "ok" | "error">("idle");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const fetchSettings = async () => {
     setLoading(true);
-    fetch("/api/admin/settings")
-      .then((res) => res.json())
-      .then((data) => {
-        setSettings(data);
-        setLoading(false);
-      });
+    setLoadError(null);
+    try {
+      const res = await fetch("/api/admin/settings");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+
+      // data puede ser un array (DB rows) o un objeto
+      const merged = { ...SETTINGS_DEFAULTS };
+      if (Array.isArray(data)) {
+        data.forEach((row: any) => {
+          if (row.setting_key !== undefined) {
+            merged[row.setting_key] = row.setting_value ?? "";
+          }
+        });
+      } else if (typeof data === "object" && data !== null && !data.error) {
+        Object.entries(data).forEach(([k, v]) => { merged[k] = String(v ?? ""); });
+      }
+      setSettings(merged);
+    } catch (err: any) {
+      setLoadError(err.message || "Error al cargar la configuración");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
+  useEffect(() => { fetchSettings(); }, []);
+
+  const getVal = (key: string) => settings[key] ?? "";
 
   const handleChange = (key: string, value: string) => {
-    setSettings((prev) =>
-      prev.map((s) => (s.setting_key === key ? { ...s, setting_value: value } : s))
-    );
+    setSettings(prev => ({ ...prev, [key]: value }));
+    if (saveStatus !== "idle") setSaveStatus("idle");
   };
 
   const handleSave = async () => {
     setIsSaving(true);
+    setSaveStatus("idle");
     try {
-      // Guardar cada setting que haya cambiado. 
-      // Para optimizar se podría enviar todo en un solo batch si el API lo soporta.
-      // Por ahora usamos el endpoint PATCH que ya existe para cada uno en paralelo.
-      const promises = settings.map((s) =>
-        fetch("/api/admin/settings", {
+      // Enviamos cada key de forma SECUENCIAL para identificar exactamente cuál falla
+      const errors: string[] = [];
+      for (const [key, value] of Object.entries(settings)) {
+        const res = await fetch("/api/admin/settings", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: s.setting_key, value: s.setting_value }),
-        })
-      );
+          body: JSON.stringify({ key, value }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          const detail = body?.detail || body?.error || `HTTP ${res.status}`;
+          console.error(`[Settings] Error guardando '${key}': ${detail}`);
+          errors.push(`${key}: ${detail}`);
+        }
+      }
 
-      await Promise.all(promises);
-      alert("Configuración guardada con éxito");
-    } catch (err) {
-      console.error(err);
-      alert("Error al guardar la configuración");
+      if (errors.length === 0) {
+        setSaveStatus("ok");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      } else {
+        console.error("[Settings] Errores al guardar:", errors);
+        setSaveStatus("error");
+        // Mostramos el primer error en la consola del navegador
+        alert(`Error al guardar:\n${errors.slice(0, 3).join("\n")}`);
+      }
+    } catch (err: any) {
+      console.error("[Settings] Error de red:", err);
+      setSaveStatus("error");
     } finally {
       setIsSaving(false);
     }
   };
+
 
   if (loading)
     return (
@@ -1167,8 +1324,18 @@ function SettingsView() {
       </div>
     );
 
-  const getVal = (key: string) =>
-    settings.find((s) => s.setting_key === key)?.setting_value || "";
+  if (loadError)
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <X size={22} className="text-red-400" />
+        </div>
+        <p className="text-red-400 font-semibold text-sm">Error al cargar: {loadError}</p>
+        <button onClick={fetchSettings} className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-700 transition-all">
+          <RefreshCw size={13} /> Reintentar
+        </button>
+      </div>
+    );
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -1221,23 +1388,127 @@ function SettingsView() {
         </SettingsCard>
       </div>
 
-      <div className="flex justify-end p-4 bg-slate-900/30 border border-slate-800/50 rounded-xl">
+      {/* Redes Sociales */}
+      <SettingsCard title="Redes Sociales">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-5 h-5 rounded-md bg-[#1877F2]/20 inline-flex items-center justify-center text-[#1877F2]">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+              </span>
+              Facebook
+            </label>
+            <input
+              type="url"
+              value={getVal("social_facebook")}
+              onChange={e => handleChange("social_facebook", e.target.value)}
+              //placeholder="https://facebook.com/tupagina"
+              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-5 h-5 rounded-md bg-[#E4405F]/20 inline-flex items-center justify-center text-[#E4405F]">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>
+              </span>
+              Instagram
+            </label>
+            <input
+              type="url"
+              value={getVal("social_instagram")}
+              onChange={e => handleChange("social_instagram", e.target.value)}
+              placeholder="https://instagram.com/tuperfil"
+              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-5 h-5 rounded-md bg-[#0A66C2]/20 inline-flex items-center justify-center text-[#0A66C2]">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
+              </span>
+              LinkedIn
+            </label>
+            <input
+              type="url"
+              value={getVal("social_linkedin")}
+              onChange={e => handleChange("social_linkedin", e.target.value)}
+              placeholder="https://linkedin.com/company/tuempresa"
+              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-5 h-5 rounded-md bg-white/10 inline-flex items-center justify-center text-slate-300">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+              </span>
+              X / Twitter
+            </label>
+            <input
+              type="url"
+              value={getVal("social_twitter")}
+              onChange={e => handleChange("social_twitter", e.target.value)}
+              placeholder="https://x.com/tuperfil"
+              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
+            />
+          </div>
+          <div className="space-y-1.5 md:col-span-2">
+            <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-5 h-5 rounded-md bg-[#25D366]/20 inline-flex items-center justify-center text-[#25D366]">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.981.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
+              </span>
+              Número WhatsApp (para links de contacto)
+            </label>
+            <input
+              type="text"
+              value={getVal("social_whatsapp")}
+              onChange={e => handleChange("social_whatsapp", e.target.value)}
+              placeholder="https://wa.me/34600000000"
+              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
+            />
+          </div>
+        </div>
+        <p className="text-[10px] text-slate-700 mt-4">💡 Estas URLs se usan en el footer, botones de compartir del blog y otros elementos de la web.</p>
+      </SettingsCard>
+
+      <div className="flex items-center justify-between p-4 bg-slate-900/30 border border-slate-800/50 rounded-xl">
+        <div>
+          {saveStatus === "ok" && (
+            <span className="flex items-center gap-2 text-green-400 text-xs font-bold">
+              <Check size={14} /> Configuración guardada correctamente
+            </span>
+          )}
+          {saveStatus === "error" && (
+            <span className="flex items-center gap-2 text-red-400 text-xs font-bold">
+              <X size={14} /> Error al guardar. Verifica la conexión.
+            </span>
+          )}
+        </div>
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-3 px-6 py-3 bg-primary-blue text-white font-black uppercase tracking-widest text-[10px] rounded-lg shadow-lg shadow-blue-500/10 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+          className={`flex items-center gap-3 px-6 py-3 font-black uppercase tracking-widest text-[10px] rounded-lg shadow-lg transition-all disabled:opacity-50 ${saveStatus === "ok"
+            ? "bg-green-600 text-white shadow-green-500/20"
+            : saveStatus === "error"
+              ? "bg-red-600 text-white shadow-red-500/20"
+              : "bg-primary-blue text-white shadow-blue-500/10 hover:scale-[1.02] active:scale-95"
+            }`}
         >
           {isSaving ? (
             <RefreshCw className="animate-spin" size={14} />
+          ) : saveStatus === "ok" ? (
+            <Check size={14} />
+          ) : saveStatus === "error" ? (
+            <X size={14} />
           ) : (
             <Save size={14} />
           )}
-          {isSaving ? "Guardando..." : "Guardar Cambios"}
+          {isSaving ? "Guardando..." : saveStatus === "ok" ? "¡Guardado!" : saveStatus === "error" ? "Error" : "Guardar Cambios"}
         </button>
       </div>
     </div>
   );
 }
+
 
 // --- MICRO UI COMPONENTS ---
 
@@ -1401,6 +1672,606 @@ function InputGroup({ label, value, onChange }: any) {
         onChange={(e) => onChange(e.target.value)}
         className="w-full bg-slate-950 border border-slate-800 p-4 rounded-2xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
       />
+    </div>
+  );
+}
+
+// ================================================================
+// BLOG VIEW — CRUD completo de posts
+// ================================================================
+function BlogView() {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<any | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [form, setForm] = useState({
+    title: "", excerpt: "", content: "", category: "Diseño Web",
+    image: "", author: "Lener Studio", is_published: false,
+  });
+
+  const categories = ["Diseño Web", "SEO", "Marketing Digital", "Casos de Éxito", "Tutoriales"];
+
+  const fetchPosts = () => {
+    setLoading(true);
+    fetch("/api/admin/blog")
+      .then(r => r.json())
+      .then(d => { setPosts(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchPosts(); }, []);
+
+  const openCreate = () => {
+    setEditingPost(null);
+    setForm({ title: "", excerpt: "", content: "", category: "Diseño Web", image: "", author: "Lener Studio", is_published: false });
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (p: any) => {
+    setEditingPost(p);
+    setForm({ title: p.title, excerpt: p.excerpt, content: p.content || "", category: p.category, image: p.image || "", author: p.author, is_published: !!p.is_published });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    const method = editingPost ? "PUT" : "POST";
+    const body = editingPost ? { ...form, id: editingPost.id } : form;
+    const res = await fetch("/api/admin/blog", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (res.ok) { setIsModalOpen(false); fetchPosts(); }
+    else alert("Error al guardar el post");
+    setSaving(false);
+  };
+
+  const togglePublish = async (id: number, current: boolean) => {
+    await fetch("/api/admin/blog", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, is_published: !current }) });
+    fetchPosts();
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("¿Eliminar este post permanentemente?")) return;
+    await fetch(`/api/admin/blog?id=${id}`, { method: "DELETE" });
+    fetchPosts();
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary-blue" /></div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Artículos del Blog</h2>
+        <button onClick={openCreate} className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all">
+          <Plus size={16} /> NUEVO ARTÍCULO
+        </button>
+      </div>
+
+      <div className="bg-slate-900/40 border border-slate-800/60 rounded-xl overflow-hidden">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-slate-800/40 bg-slate-950/40">
+              <th className="px-5 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest">Título</th>
+              <th className="px-3 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest">Categoría</th>
+              <th className="px-3 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest">Autor</th>
+              <th className="px-3 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest text-center">Estado</th>
+              <th className="px-5 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/10">
+            {posts.length === 0 && (
+              <tr><td colSpan={5} className="px-5 py-10 text-center text-slate-600 italic text-sm">No hay artículos aún. Crea el primero.</td></tr>
+            )}
+            {posts.map((p: any) => (
+              <tr key={p.id} className="hover:bg-white/[0.01] transition-all group">
+                <td className="px-5 py-3">
+                  <div className="max-w-xs">
+                    <div className="text-sm font-bold text-slate-200 truncate">{p.title}</div>
+                    <div className="text-[10px] text-slate-600 truncate mt-0.5">{p.excerpt}</div>
+                  </div>
+                </td>
+                <td className="px-3 py-3">
+                  <span className="text-[10px] px-2 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full font-black uppercase">{p.category}</span>
+                </td>
+                <td className="px-3 py-3 text-[11px] text-slate-500 font-bold">{p.author}</td>
+                <td className="px-3 py-3 text-center">
+                  <button onClick={() => togglePublish(p.id, p.is_published)} className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase border transition-all ${p.is_published ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20" : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20 hover:bg-green-500/10 hover:text-green-400 hover:border-green-500/20"}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${p.is_published ? "bg-green-500" : "bg-yellow-500"}`} />
+                    {p.is_published ? "Publicado" : "Borrador"}
+                  </button>
+                </td>
+                <td className="px-5 py-3 text-right">
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => openEdit(p)} className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-all"><Edit size={13} /></button>
+                    <button onClick={() => handleDelete(p.id)} className="p-1.5 bg-slate-800 hover:bg-red-500/20 text-slate-600 hover:text-red-400 rounded-lg transition-all"><Trash2 size={13} /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal Blog */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative bg-slate-900 border border-slate-800 p-8 rounded-[2rem] w-full max-w-3xl shadow-2xl overflow-y-auto max-h-[92vh]">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-white uppercase tracking-tighter">{editingPost ? "Editar Artículo" : "Nuevo Artículo"}</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white"><X size={22} /></button>
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-5 text-left">
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Título *</label>
+                  <input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Título del artículo..." className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Categoría</label>
+                    <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none">
+                      {categories.map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Autor</label>
+                    <input value={form.author} onChange={e => setForm({ ...form, author: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Imagen de portada</label>
+                  <div className="flex gap-2">
+                    <input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="https://... o usa la Biblioteca" className="flex-1 bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                    <button type="button" onClick={() => setShowMediaPicker(true)} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5">
+                      <ImagePlus size={14} /> Biblioteca
+                    </button>
+                  </div>
+                  {form.image && (
+                    <div className="mt-2 relative h-28 w-full rounded-xl overflow-hidden border border-slate-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={form.image} alt="preview" className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    </div>
+                  )}
+                  {/* Media Picker Modal */}
+                  <AnimatePresence>
+                    {showMediaPicker && (
+                      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowMediaPicker(false)} className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" />
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-slate-900 border border-slate-800 rounded-[2rem] w-full max-w-5xl shadow-2xl overflow-hidden" style={{ maxHeight: "85vh" }}>
+                          <MediaLibrary
+                            mode="picker"
+                            onSelect={url => {
+                              setForm({ ...form, image: url });
+                              setShowMediaPicker(false);
+                            }}
+                            onClose={() => setShowMediaPicker(false)}
+                          />
+                        </motion.div>
+                      </div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Extracto (visible en el listado del blog) *</label>
+                  <textarea required rows={2} value={form.excerpt} onChange={e => setForm({ ...form, excerpt: e.target.value })} placeholder="Descripción corta y atractiva del artículo..." className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none resize-none" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Contenido del artículo</label>
+                  <MarkdownEditor
+                    value={form.content}
+                    onChange={val => setForm({ ...form, content: val })}
+                    minRows={14}
+                    placeholder="Escribe el artículo aquí. Usa ## para secciones, ### para subtítulos, **negrita**, - listas..."
+                  />
+                </div>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div onClick={() => setForm({ ...form, is_published: !form.is_published })} className={`w-11 h-6 rounded-full border-2 flex items-center transition-all ${form.is_published ? "bg-green-500/20 border-green-500" : "bg-slate-800 border-slate-700"}`}>
+                    <div className={`w-4 h-4 rounded-full mx-0.5 transition-all ${form.is_published ? "translate-x-5 bg-green-400" : "bg-slate-600"}`} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-400">Publicar inmediatamente</span>
+                </label>
+                <div className="flex gap-4 pt-2">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors">Cancelar</button>
+                  <button type="submit" disabled={saving} className="flex-[2] py-3.5 bg-primary-blue text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-blue-600 transition-all disabled:opacity-50">
+                    {saving ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
+                    {saving ? "Guardando..." : editingPost ? "Guardar Cambios" : "Crear Artículo"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ================================================================
+// POPUPS VIEW — CRUD de popups de marketing
+// ================================================================
+function PopupsView() {
+  const [popups, setPopups] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPopup, setEditingPopup] = useState<any | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    title: "", subtitle: "", cta_text: "Ver oferta",
+    cta_url: "/#contacto", trigger_type: "exit_intent", trigger_delay: 0, is_active: false,
+  });
+
+  const fetchPopups = () => {
+    setLoading(true);
+    fetch("/api/admin/popups")
+      .then(r => r.json())
+      .then(d => { setPopups(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchPopups(); }, []);
+
+  const openCreate = () => {
+    setEditingPopup(null);
+    setForm({ title: "", subtitle: "", cta_text: "Ver oferta", cta_url: "/#contacto", trigger_type: "exit_intent", trigger_delay: 0, is_active: false });
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (p: any) => {
+    setEditingPopup(p);
+    setForm({ title: p.title, subtitle: p.subtitle || "", cta_text: p.cta_text, cta_url: p.cta_url, trigger_type: p.trigger_type, trigger_delay: p.trigger_delay, is_active: !!p.is_active });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    const method = editingPopup ? "PUT" : "POST";
+    const body = editingPopup ? { ...form, id: editingPopup.id } : form;
+    const res = await fetch("/api/admin/popups", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (res.ok) { setIsModalOpen(false); fetchPopups(); }
+    else alert("Error al guardar el popup");
+    setSaving(false);
+  };
+
+  const toggleActive = async (id: number, current: boolean) => {
+    await fetch("/api/admin/popups", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, is_active: !current }) });
+    fetchPopups();
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("¿Eliminar este popup?")) return;
+    await fetch(`/api/admin/popups?id=${id}`, { method: "DELETE" });
+    fetchPopups();
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary-blue" /></div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Popups de Marketing</h2>
+          <p className="text-[10px] text-slate-700 mt-1">Solo puede haber un popup activo a la vez para no saturar la experiencia.</p>
+        </div>
+        <button onClick={openCreate} className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all">
+          <Plus size={16} /> NUEVO POPUP
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {popups.length === 0 && (
+          <div className="col-span-full py-16 text-center text-slate-600 italic">No hay popups configurados aún.</div>
+        )}
+        {popups.map((p: any) => (
+          <div key={p.id} className={`bg-slate-900/40 border rounded-2xl p-6 flex flex-col gap-4 transition-all ${p.is_active ? "border-green-500/30 bg-green-500/5" : "border-slate-800/60"}`}>
+            <div className="flex justify-between items-start">
+              <div className="flex-grow">
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase border mb-3 ${p.is_active ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-slate-800 text-slate-500 border-slate-700"}`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${p.is_active ? "bg-green-500 animate-pulse" : "bg-slate-600"}`} />
+                  {p.is_active ? "Activo" : "Inactivo"}
+                </div>
+                <h3 className="text-sm font-bold text-white leading-tight">{p.title}</h3>
+                {p.subtitle && <p className="text-[11px] text-slate-500 mt-1">{p.subtitle}</p>}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[10px]">
+              <div className="bg-slate-950/50 p-2 rounded-lg">
+                <span className="text-slate-600 font-black uppercase block mb-0.5">Disparador</span>
+                <span className="text-slate-300 font-bold">{p.trigger_type === "exit_intent" ? "Exit Intent" : p.trigger_type === "delay" ? `${p.trigger_delay}s delay` : "Scroll"}</span>
+              </div>
+              <div className="bg-slate-950/50 p-2 rounded-lg">
+                <span className="text-slate-600 font-black uppercase block mb-0.5">CTA</span>
+                <span className="text-slate-300 font-bold truncate block">{p.cta_text}</span>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-2 border-t border-slate-800/40">
+              <button onClick={() => toggleActive(p.id, p.is_active)} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase border justify-center transition-all ${p.is_active ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20 hover:bg-yellow-500/20" : "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20"}`}>
+                {p.is_active ? "Desactivar" : "Activar"}
+              </button>
+              <button onClick={() => openEdit(p)} className="p-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded transition-all"><Edit size={13} /></button>
+              <button onClick={() => handleDelete(p.id)} className="p-2 px-3 bg-slate-800 hover:bg-red-500/20 text-slate-600 hover:text-red-400 rounded transition-all"><Trash2 size={13} /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal Popup */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative bg-slate-900 border border-slate-800 p-8 rounded-[2rem] w-full max-w-lg shadow-2xl overflow-y-auto max-h-[90vh]">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-white uppercase tracking-tighter">{editingPopup ? "Editar Popup" : "Nuevo Popup"}</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white"><X size={22} /></button>
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-5 text-left">
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Título principal *</label>
+                  <input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="¿Te vas sin pedir presupuesto?" className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Subtítulo</label>
+                  <input value={form.subtitle} onChange={e => setForm({ ...form, subtitle: e.target.value })} placeholder="Oferta o propuesta de valor..." className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Texto del botón *</label>
+                    <input required value={form.cta_text} onChange={e => setForm({ ...form, cta_text: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">URL del botón *</label>
+                    <input required value={form.cta_url} onChange={e => setForm({ ...form, cta_url: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Disparador</label>
+                    <select value={form.trigger_type} onChange={e => setForm({ ...form, trigger_type: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none">
+                      <option value="exit_intent">Exit Intent</option>
+                      <option value="delay">Delay (segundos)</option>
+                      <option value="scroll">Scroll 50%</option>
+                    </select>
+                  </div>
+                  {form.trigger_type === "delay" && (
+                    <div>
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Delay (seg)</label>
+                      <input type="number" min={0} max={60} value={form.trigger_delay} onChange={e => setForm({ ...form, trigger_delay: Number(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                    </div>
+                  )}
+                </div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <div onClick={() => setForm({ ...form, is_active: !form.is_active })} className={`w-11 h-6 rounded-full border-2 flex items-center transition-all ${form.is_active ? "bg-green-500/20 border-green-500" : "bg-slate-800 border-slate-700"}`}>
+                    <div className={`w-4 h-4 rounded-full mx-0.5 transition-all ${form.is_active ? "translate-x-5 bg-green-400" : "bg-slate-600"}`} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-400">Activar popup</span>
+                </label>
+                <div className="flex gap-4 pt-2">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors">Cancelar</button>
+                  <button type="submit" disabled={saving} className="flex-[2] py-3.5 bg-primary-blue text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-blue-600 transition-all disabled:opacity-50">
+                    {saving ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
+                    {saving ? "Guardando..." : editingPopup ? "Guardar Cambios" : "Crear Popup"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ================================================================
+// PRICING VIEW — CRUD de planes de precios
+// ================================================================
+function PricingView() {
+  const [plans, setPlans] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<any | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [featureInput, setFeatureInput] = useState("");
+  const [form, setForm] = useState({
+    name: "", description: "", price: "", features: [] as string[],
+    cta_text: "Contratar", cta_url: "/#contacto",
+    is_popular: false, is_published: true, display_order: 0,
+  });
+
+  const fetchPlans = () => {
+    setLoading(true);
+    fetch("/api/admin/pricing")
+      .then(r => r.json())
+      .then(d => { setPlans(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchPlans(); }, []);
+
+  const openCreate = () => {
+    setEditingPlan(null);
+    setForm({ name: "", description: "", price: "", features: [], cta_text: "Contratar", cta_url: "/#contacto", is_popular: false, is_published: true, display_order: plans.length + 1 });
+    setFeatureInput("");
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (p: any) => {
+    setEditingPlan(p);
+    setForm({ name: p.name, description: p.description || "", price: p.price, features: Array.isArray(p.features) ? p.features : [], cta_text: p.cta_text, cta_url: p.cta_url, is_popular: !!p.is_popular, is_published: !!p.is_published, display_order: p.display_order });
+    setFeatureInput("");
+    setIsModalOpen(true);
+  };
+
+  const addFeature = () => {
+    const v = featureInput.trim();
+    if (v && !form.features.includes(v)) {
+      setForm({ ...form, features: [...form.features, v] });
+      setFeatureInput("");
+    }
+  };
+
+  const removeFeature = (i: number) => {
+    setForm({ ...form, features: form.features.filter((_, idx) => idx !== i) });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    const method = editingPlan ? "PUT" : "POST";
+    const body = editingPlan ? { ...form, id: editingPlan.id } : form;
+    const res = await fetch("/api/admin/pricing", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (res.ok) { setIsModalOpen(false); fetchPlans(); }
+    else alert("Error al guardar el plan");
+    setSaving(false);
+  };
+
+  const togglePublish = async (id: number, current: boolean) => {
+    await fetch("/api/admin/pricing", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, is_published: !current }) });
+    fetchPlans();
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("¿Eliminar este plan de precios?")) return;
+    await fetch(`/api/admin/pricing?id=${id}`, { method: "DELETE" });
+    fetchPlans();
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary-blue" /></div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Planes de Precios</h2>
+        <button onClick={openCreate} className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all">
+          <Plus size={16} /> NUEVO PLAN
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {plans.length === 0 && (
+          <div className="col-span-full py-16 text-center text-slate-600 italic">No hay planes configurados. Crea el primero.</div>
+        )}
+        {plans.map((p: any) => (
+          <div key={p.id} className={`bg-slate-900/40 border rounded-2xl p-6 flex flex-col gap-4 transition-all relative ${p.is_popular ? "border-blue-500/40 bg-blue-500/5" : "border-slate-800/60"} ${!p.is_published ? "opacity-60" : ""}`}>
+            {p.is_popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-[9px] font-black px-3 py-1 rounded-full uppercase">⭐ Popular</div>}
+            <div>
+              <h3 className="text-base font-bold text-white">{p.name}</h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">{p.description}</p>
+              <div className="mt-3 text-3xl font-black text-white">{p.price}€</div>
+            </div>
+            <ul className="space-y-2 flex-grow">
+              {(Array.isArray(p.features) ? p.features : []).map((f: string, i: number) => (
+                <li key={i} className="flex items-center gap-2 text-[11px] text-slate-400">
+                  <Check size={12} className="text-blue-400 shrink-0" />{f}
+                </li>
+              ))}
+            </ul>
+            <div className="flex gap-2 pt-3  border-t border-slate-800/40">
+              <button onClick={() => togglePublish(p.id, p.is_published)} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase border transition-all rounded-full justify-center ${p.is_published ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"}`}>
+                {p.is_published ? "Publicado" : "Oculto"}
+              </button>
+              <button onClick={() => openEdit(p)} className="p-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded transition-all"><Edit size={13} /></button>
+              <button onClick={() => handleDelete(p.id)} className="p-2 px-3 bg-slate-800 hover:bg-red-500/20 text-slate-600 hover:text-red-400 rounded transition-all"><Trash2 size={13} /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal Plan */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative bg-slate-900 border border-slate-800 p-8 rounded-[2rem] w-full max-w-lg shadow-2xl overflow-y-auto max-h-[90vh]">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-white uppercase tracking-tighter">{editingPlan ? "Editar Plan" : "Nuevo Plan"}</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white"><X size={22} /></button>
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-5 text-left">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Nombre del Plan *</label>
+                    <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Plan Starter" className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Precio (€) *</label>
+                    <input required value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="497" className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Descripción</label>
+                  <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Ideal para..." className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Texto CTA</label>
+                    <input value={form.cta_text} onChange={e => setForm({ ...form, cta_text: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">URL CTA</label>
+                    <input value={form.cta_url} onChange={e => setForm({ ...form, cta_url: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Características incluidas</label>
+                  <div className="flex gap-2 mb-3">
+                    <input value={featureInput} onChange={e => setFeatureInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addFeature(); } }} placeholder="Ej: SEO avanzado..." className="flex-grow bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                    <button type="button" onClick={addFeature} className="px-4 bg-primary-blue text-white rounded-xl font-bold text-xs hover:bg-blue-600 transition-all"><Plus size={16} /></button>
+                  </div>
+                  <ul className="space-y-2">
+                    {form.features.map((f, i) => (
+                      <li key={i} className="flex items-center justify-between bg-slate-950/50 border border-slate-800 px-3 py-2 rounded-lg text-sm text-slate-300">
+                        <span className="flex items-center gap-2"><Check size={12} className="text-blue-400" />{f}</span>
+                        <button type="button" onClick={() => removeFeature(i)} className="text-slate-600 hover:text-red-400 transition-colors"><X size={14} /></button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <div onClick={() => setForm({ ...form, is_popular: !form.is_popular })} className={`w-10 h-5 rounded-full border-2 flex items-center transition-all ${form.is_popular ? "bg-yellow-500/20 border-yellow-500" : "bg-slate-800 border-slate-700"}`}>
+                      <div className={`w-3.5 h-3.5 rounded-full mx-0.5 transition-all ${form.is_popular ? "translate-x-5 bg-yellow-400" : "bg-slate-600"}`} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Más popular</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <div onClick={() => setForm({ ...form, is_published: !form.is_published })} className={`w-10 h-5 rounded-full border-2 flex items-center transition-all ${form.is_published ? "bg-green-500/20 border-green-500" : "bg-slate-800 border-slate-700"}`}>
+                      <div className={`w-3.5 h-3.5 rounded-full mx-0.5 transition-all ${form.is_published ? "translate-x-5 bg-green-400" : "bg-slate-600"}`} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Publicado</span>
+                  </label>
+                </div>
+                <div className="flex gap-4 pt-2">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors">Cancelar</button>
+                  <button type="submit" disabled={saving} className="flex-[2] py-3.5 bg-primary-blue text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-blue-600 transition-all disabled:opacity-50">
+                    {saving ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
+                    {saving ? "Guardando..." : editingPlan ? "Guardar Cambios" : "Crear Plan"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ================================================================
+// MEDIA VIEW — Biblioteca de medios completa
+// ================================================================
+function MediaView() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Biblioteca de Medios</h2>
+        <p className="text-[10px] text-slate-700">Imágenes almacenadas en <code className="text-slate-500">/public/uploads</code></p>
+      </div>
+      <div className="bg-slate-900/40 border border-slate-800/60 rounded-2xl overflow-hidden">
+        <MediaLibrary mode="library" />
+      </div>
     </div>
   );
 }

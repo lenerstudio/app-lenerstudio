@@ -7,6 +7,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import CookieBanner from "@/components/CookieBanner";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
+import ExitIntentPopup from "@/components/ExitIntentPopup";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
@@ -141,6 +142,7 @@ export default function RootLayout({
                 <Toaster />
                 <WhatsAppButton />
                 <CookieBanner />
+                <ExitIntentPopup />
             </body>
         </html>
     );

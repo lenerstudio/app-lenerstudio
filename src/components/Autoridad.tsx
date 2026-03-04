@@ -49,18 +49,10 @@ const Autoridad: React.FC<AutoridadProps> = () => {
 
   return (
     <section className="py-20 bg-gradient-to-br from-gray-900 to-gray-800 text-white relative overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0 opacity-10">
-        <img
-          src="https://images.unsplash.com/photo-1697638164340-6c5fc558bdf2?w=1920&q=60&fm=webp&fit=crop"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          decoding="async"
-          width={1920}
-          height={1080}
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+      {/* CSS-only decorative orbs — no external HTTP request */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-blue-700/10 blur-[100px]" />
+        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-purple-700/10 blur-[100px]" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
