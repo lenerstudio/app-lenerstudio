@@ -68,21 +68,11 @@
 
   body {
     @apply bg-white text-gray-900 antialiased;
-    font-family:
-      "Inter",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      "Roboto",
-      "Oxygen",
-      "Ubuntu",
-      "Cantarell",
-      "Fira Sans",
-      "Droid Sans",
-      "Helvetica Neue",
-      sans-serif;
+    font-family: var(--font-inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
     /* Evita el parpadeo al hacer tap en iOS */
     -webkit-tap-highlight-color: transparent;
+    /* Mejora el render de texto */
+    text-rendering: optimizeLegibility;
   }
 
   /* Tipografía responsiva profesional */

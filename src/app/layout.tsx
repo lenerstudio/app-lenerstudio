@@ -3,13 +3,16 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
-import CookieBanner from "@/components/CookieBanner";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
-import ExitIntentPopup from "@/components/ExitIntentPopup";
+import ClientOnlyComponents from "@/components/ClientOnlyComponents";
 
-const inter = Inter({ subsets: ["latin"], display: "swap" });
+const inter = Inter({
+    subsets: ["latin"],
+    display: "swap",
+    variable: "--font-inter",
+    preload: true,
+});
 
 export const metadata: Metadata = {
     title: "Diseño Web Sevilla y Landing Pages de Alta Conversión | Lener Studio",
@@ -115,17 +118,20 @@ export default function RootLayout({
     return (
         <html lang="es" className="scroll-smooth">
             <head>
-                <link
-                    rel="stylesheet"
-                    href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css"
-                />
+                {/* Preconnect para CDN de devicons (la carga la hace ClientOnlyComponents) */}
+                <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+                <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
                 <meta name="facebook-domain-verification" content="pgvtam3jp2a7dei0t9753m60jpkn6b" />
+                <meta property="og:title" content="Desarrollo Web Estratégico | LenerStudio" />
+                <meta property="og:description" content="Transformo páginas web en sistemas que generan clientes." />
+                <meta property="og:image" content="https://lenerstudio.com/logopag.svg" />
+                <meta property="og:url" content="https://www.lenerstudio.com" />
             </head>
-            <body className={`${inter.className} antialiased bg-white text-gray-900`}>
+            <body className={`${inter.variable} font-sans antialiased bg-white text-gray-900`}>
                 <a
                     href="#contenido-principal"
                     className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:px-6 focus:py-3 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:font-semibold focus:shadow-xl"
@@ -141,9 +147,7 @@ export default function RootLayout({
                 </Providers>
                 <Footer />
                 <Toaster />
-                <WhatsAppButton />
-                <CookieBanner />
-                <ExitIntentPopup />
+                <ClientOnlyComponents />
             </body>
         </html>
     );

@@ -12,9 +12,6 @@ const ParaQuienEs = dynamic(() => import("@/components/ParaQuienEs"), {
 const Problema = dynamic(() => import("@/components/Problema"), {
     loading: () => <SectionSkeleton minHeight="400px" />,
 });
-const InvisibleAImparable = dynamic(() => import("@/components/InvisibleAImparable"), {
-    loading: () => <SectionSkeleton minHeight="600px" />,
-});
 const Soluciones = dynamic(() => import("@/components/Soluciones"), {
     loading: () => <SectionSkeleton minHeight="800px" />,
 });
@@ -56,46 +53,70 @@ const SectionSkeleton = ({ minHeight = "400px" }: { minHeight?: string }) => (
 export default function Home() {
     return (
         <div className="min-h-screen bg-white">
+            {/* Hero — siempre visible, sin lazy */}
             <Hero />
+
+            {/* Secciones above-the-fold inmediatas */}
             <Suspense fallback={<SectionSkeleton minHeight="100px" />}>
                 <SocialProofBar />
             </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
-                <ParaQuienEs />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="400px" />}>
-                <Problema />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
-                <InvisibleAImparable />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="800px" />}>
-                <Soluciones />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
-                <Beneficios />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
-                <Oferta />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
-                <CasosDeExito />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
-                <Testimonios />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
-                <Autoridad />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
-                <Garantia />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
-                <FaqSection />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton minHeight="700px" />}>
-                <ContactoFinal />
-            </Suspense>
+
+            {/* Secciones below-the-fold con content-visibility:auto para mejorar rendimiento de render */}
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
+                    <ParaQuienEs />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="400px" />}>
+                    <Problema />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="800px" />}>
+                    <Soluciones />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
+                    <Beneficios />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
+                    <Oferta />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
+                    <CasosDeExito />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
+                    <Testimonios />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
+                    <Autoridad />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="500px" />}>
+                    <Garantia />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="700px" />}>
+                    <ContactoFinal />
+                </Suspense>
+            </div>
+            <div className="section-lazy">
+                <Suspense fallback={<SectionSkeleton minHeight="600px" />}>
+                    <FaqSection />
+                </Suspense>
+            </div>
         </div>
     );
 }

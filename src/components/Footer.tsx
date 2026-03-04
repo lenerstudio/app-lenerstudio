@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Mail, MapPin, Phone } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Mail, MapPin, Phone, Facebook, Instagram, Linkedin } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,8 +9,26 @@ export type FooterProps = unknown;
 
 const Footer: React.FC<FooterProps> = () => {
   const pathname = usePathname();
+  const [settings, setSettings] = useState<any>({});
+  const [mounted, setMounted] = useState(false);
+  const [year, setYear] = useState<number | null>(null);
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/login")) return null;
+
+
+  useEffect(() => {
+    setMounted(true);
+    setYear(new Date().getFullYear());
+    fetch("/api/public/settings")
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(() => { });
+  }, []);
+
+  if (!mounted) return null;
+
+  if (pathname.startsWith("/admin") || pathname.startsWith("/login")) {
+    return null;
+  }
 
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
@@ -31,6 +49,8 @@ const Footer: React.FC<FooterProps> = () => {
     { label: "Aviso Legal", to: "/aviso-legal" },
   ];
 
+
+
   return (
     <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
       <div className="container mx-auto px-4">
@@ -44,6 +64,24 @@ const Footer: React.FC<FooterProps> = () => {
               Agencia de Desarrollo Web especializada en crear soluciones
               digitales que convierten visitas en clientes.
             </p>
+            {/* Redes Sociales dinámicas */}
+            <div className="flex gap-4">
+              {mounted && settings.social_facebook && (
+                <a href={settings.social_facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary-blue hover:text-white transition-all" aria-label="Facebook">
+                  <Facebook size={18} />
+                </a>
+              )}
+              {mounted && settings.social_instagram && (
+                <a href={settings.social_instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pink-600 hover:text-white transition-all" aria-label="Instagram">
+                  <Instagram size={18} />
+                </a>
+              )}
+              {mounted && settings.social_linkedin && (
+                <a href={settings.social_linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#0077b5] hover:text-white transition-all" aria-label="LinkedIn">
+                  <Linkedin size={18} />
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -120,7 +158,7 @@ const Footer: React.FC<FooterProps> = () => {
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-500 text-sm">
-              &copy; {new Date().getFullYear()} Lener Studio. Todos los derechos reservados.
+              &copy; {year ?? ""} Lener Studio. Todos los derechos reservados.
             </p>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-1">
               {legalLinks.map((link) => (

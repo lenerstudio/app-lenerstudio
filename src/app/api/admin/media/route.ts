@@ -5,7 +5,8 @@ import { join, extname } from "path";
 import { v4 as uuidv4 } from "uuid";
 
 const UPLOADS_DIR = join(process.cwd(), "public", "uploads");
-const ALLOWED_EXT = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
+const ALLOWED_EXT = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif", ".pdf"];
+
 
 // GET — Lista todos los archivos en /public/uploads
 export async function GET() {

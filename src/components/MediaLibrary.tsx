@@ -34,6 +34,29 @@ function formatDate(iso: string) {
     });
 }
 
+function isPdf(url: string) {
+    return url.toLowerCase().endsWith(".pdf");
+}
+
+/** Miniatura: imagen normal o icono PDF si es PDF */
+function FileThumbnail({ url, name, className }: { url: string; name: string; className?: string }) {
+    if (isPdf(url)) {
+        return (
+            <div className={`flex flex-col items-center justify-center bg-[#1a0000] ${className ?? "w-full h-full"}`}>
+                {/* Adobe PDF Logo SVG */}
+                <svg viewBox="0 0 56 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 drop-shadow">
+                    <rect width="56" height="64" rx="6" fill="#CC0000" />
+                    <text x="28" y="36" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold" fontFamily="Arial,sans-serif">PDF</text>
+                    <rect x="8" y="44" width="40" height="4" rx="2" fill="rgba(255,255,255,0.3)" />
+                </svg>
+                <span className="text-[9px] text-red-300/70 mt-1.5 font-mono truncate max-w-full px-1">{name.split("/").pop()}</span>
+            </div>
+        );
+    }
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={url} alt={name} className={`object-cover ${className ?? "w-full h-full"}`} loading="lazy" />;
+}
+
 export default function MediaLibrary({ mode = "library", onSelect, onClose }: MediaLibraryProps) {
     const [files, setFiles] = useState<MediaFile[]>([]);
     const [filtered, setFiltered] = useState<MediaFile[]>([]);
@@ -218,13 +241,7 @@ export default function MediaLibrary({ mode = "library", onSelect, onClose }: Me
                                         : "border-slate-800 hover:border-slate-600"
                                         }`}
                                 >
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                        src={file.url}
-                                        alt={file.name}
-                                        className="w-full h-full object-cover"
-                                        loading="lazy"
-                                    />
+                                    <FileThumbnail url={file.url} name={file.name} className="w-full h-full object-cover" />
                                     {/* Hover overlay */}
                                     <div className={`absolute inset-0 bg-blue-600/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all ${selected?.name === file.name ? "!opacity-100 bg-blue-600/60" : ""}`}>
                                         {selected?.name === file.name && (
@@ -258,9 +275,8 @@ export default function MediaLibrary({ mode = "library", onSelect, onClose }: Me
                                         : "border-transparent hover:border-slate-800 hover:bg-slate-900/40"
                                         }`}
                                 >
-                                    <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-800 shrink-0">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={file.url} alt={file.name} className="w-full h-full object-cover" loading="lazy" />
+                                    <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-800 shrink-0 flex items-center justify-center">
+                                        <FileThumbnail url={file.url} name={file.name} className="w-full h-full" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="text-xs font-semibold text-slate-300 truncate">{file.name}</div>

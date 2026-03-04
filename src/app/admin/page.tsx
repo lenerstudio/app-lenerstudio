@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,14 @@ import {
   ToggleLeft,
   ToggleRight,
   ImagePlus,
+  FolderOpen,
+  Mail,
+  Download,
+  User,
+  EyeOff,
 } from "lucide-react";
+
+
 import { motion, AnimatePresence } from "framer-motion";
 
 type ViewType =
@@ -46,8 +53,10 @@ type ViewType =
   | "settings"
   | "blog"
   | "popups"
+  | "popup_leads"
   | "pricing"
-  | "media";
+  | "media"
+  | "profile";
 import { Project } from "../interface/Project";
 
 export default function AdminDashboard() {
@@ -154,6 +163,13 @@ export default function AdminDashboard() {
             onClick={() => setActiveView("popups")}
           />
           <NavItem
+            icon={<Mail size={18} />}
+            label="Leads Popup"
+            active={activeView === "popup_leads"}
+            collapsed={!isSidebarOpen}
+            onClick={() => setActiveView("popup_leads")}
+          />
+          <NavItem
             icon={<DollarSign size={18} />}
             label="Precios"
             active={activeView === "pricing"}
@@ -178,7 +194,14 @@ export default function AdminDashboard() {
           />
         </nav>
 
-        <div className="p-3 border-t border-slate-800/40">
+        <div className="p-3 border-t border-slate-800/40 space-y-1">
+          <NavItem
+            icon={<User size={18} />}
+            label="Mi Perfil"
+            active={activeView === "profile"}
+            collapsed={!isSidebarOpen}
+            onClick={() => setActiveView("profile")}
+          />
           <button
             onClick={() => signOut()}
             className="w-full flex items-center gap-3 text-slate-500 hover:text-red-400 p-2.5 rounded-xl transition-all hover:bg-red-500/10"
@@ -222,15 +245,17 @@ export default function AdminDashboard() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              {activeView === "overview" && <OverviewView />}
+              {activeView === "overview" && <OverviewView setActiveView={setActiveView} />}
               {activeView === "leads" && <LeadsView />}
               {activeView === "portfolio" && <PortfolioView />}
               {activeView === "testimonials" && <TestimoniosView />}
               {activeView === "settings" && <SettingsView />}
               {activeView === "blog" && <BlogView />}
               {activeView === "popups" && <PopupsView />}
+              {activeView === "popup_leads" && <PopupLeadsView />}
               {activeView === "pricing" && <PricingView />}
               {activeView === "media" && <MediaView />}
+              {activeView === "profile" && <ProfileView />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -270,7 +295,7 @@ function NavItem({ icon, label, active, badge, collapsed, onClick }: any) {
   );
 }
 
-function OverviewView() {
+function OverviewView({ setActiveView }: { setActiveView: (v: string) => void }) {
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [seedState, setSeedState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -323,7 +348,27 @@ function OverviewView() {
 
   return (
     <div className="space-y-6">
-      {/* Seed panel - only show while not done or while results are shown */}
+      {/* Banner de acceso rápido al sitio web */}
+      <div className="bg-gradient-to-r from-emerald-900/30 to-cyan-900/20 border border-emerald-500/20 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Sitio en vivo</span>
+          </div>
+          <p className="text-sm font-semibold text-slate-300">Tu sitio web está activo y visible para los visitantes</p>
+          <p className="text-[11px] text-slate-600 mt-0.5">Haz clic para abrirlo en una nueva pestaña</p>
+        </div>
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 hover:scale-[1.02]"
+        >
+          <Globe size={14} /> Ver sitio web
+        </a>
+      </div>
+
+      {/* Seed panel */}
       <div className="bg-gradient-to-r from-slate-900/80 to-blue-900/20 border border-blue-500/20 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -434,11 +479,17 @@ function OverviewView() {
             <ActionButton
               label="Ver mensajes"
               icon={<MessageSquare size={14} />}
+              onClick={() => setActiveView("leads")}
             />
-            <ActionButton label="Nuevo proyecto" icon={<Plus size={14} />} />
+            <ActionButton
+              label="Nuevo proyecto"
+              icon={<Plus size={14} />}
+              onClick={() => setActiveView("portfolio")}
+            />
             <ActionButton
               label="Cambiar SEO"
               icon={<Search size={14} />}
+              onClick={() => setActiveView("settings")}
             />
             <div className="pt-4 mt-4 border-t border-slate-800/40 opacity-50">
               <div className="flex items-center gap-2">
@@ -453,9 +504,9 @@ function OverviewView() {
   );
 }
 
-function ActionButton({ label, icon }: any) {
+function ActionButton({ label, icon, onClick }: any) {
   return (
-    <button className="w-full flex items-center gap-3 p-3 bg-slate-950/40 border border-slate-800/50 rounded-xl text-xs text-slate-400 hover:text-white hover:border-primary-blue/30 transition-all text-left group">
+    <button onClick={onClick} className="w-full flex items-center gap-3 p-3 bg-slate-950/40 border border-slate-800/50 rounded-xl text-xs text-slate-400 hover:text-white hover:border-primary-blue/30 transition-all text-left group">
       <div className="text-slate-600 group-hover:text-primary-blue transition-colors">
         {icon}
       </div>
@@ -725,6 +776,8 @@ function PortfolioView() {
     technologies: [] as string[],
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showPortfolioMediaPicker, setShowPortfolioMediaPicker] = useState(false);
+  const [mediaImageUrl, setMediaImageUrl] = useState<string>(""); // URL de imagen desde biblioteca
 
   const fetchProjects = () => {
     setLoading(true);
@@ -780,12 +833,17 @@ function PortfolioView() {
           ? JSON.parse(project.technologies || '[]')
           : [],
     });
+    setSelectedFile(null);
+    setMediaImageUrl(""); // se usará la imagen actual del proyecto
     setIsModalOpen(true);
   };
 
   const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile && !editingProject) return alert("Por favor, selecciona una imagen");
+    // Necesita imagen: nuevo archivo, URL de biblioteca, o imagen existente al editar
+    if (!selectedFile && !mediaImageUrl && !editingProject) {
+      return alert("Por favor, selecciona una imagen del portafolio");
+    }
 
     setIsUploading(true);
     const data = new FormData();
@@ -795,9 +853,15 @@ function PortfolioView() {
     data.append("description", formData.description);
     data.append("live_url", formData.live_url);
     data.append("technologies", JSON.stringify(formData.technologies));
+
     if (selectedFile) {
+      // Subida de archivo nuevo
       data.append("image", selectedFile);
+    } else if (mediaImageUrl) {
+      // Imagen seleccionada desde la biblioteca de medios
+      data.append("current_image", mediaImageUrl);
     } else if (editingProject) {
+      // Mantener imagen existente
       data.append("current_image", editingProject.main_image);
     }
 
@@ -813,14 +877,9 @@ function PortfolioView() {
       if (res.ok) {
         setIsModalOpen(false);
         setEditingProject(null);
-        setFormData({
-          title: "",
-          category: "Landing Page",
-          description: "",
-          live_url: "",
-          technologies: [],
-        });
+        setFormData({ title: "", category: "Landing Page", description: "", live_url: "", technologies: [] });
         setSelectedFile(null);
+        setMediaImageUrl("");
         fetchProjects();
       } else {
         alert("Error al procesar el proyecto");
@@ -850,14 +909,9 @@ function PortfolioView() {
         <button
           onClick={() => {
             setEditingProject(null);
-            setFormData({
-              title: "",
-              category: "Landing Page",
-              description: "",
-              live_url: "",
-              technologies: [],
-            });
+            setFormData({ title: "", category: "Landing Page", description: "", live_url: "", technologies: [] });
             setSelectedFile(null);
+            setMediaImageUrl("");
             setIsModalOpen(true);
           }}
           className="flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
@@ -1072,37 +1126,99 @@ function PortfolioView() {
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">
                     Imagen del Proyecto
                   </label>
+
+                  {/* Preview de imagen actual o seleccionada */}
+                  {(mediaImageUrl || (editingProject?.main_image && !selectedFile)) && (
+                    <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-slate-700 mb-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={mediaImageUrl || editingProject?.main_image}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
+                      <span className="absolute bottom-2 left-3 text-[10px] text-white/70 font-bold uppercase tracking-wider">
+                        {mediaImageUrl ? "Imagen de biblioteca" : "Imagen actual"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => { setMediaImageUrl(""); }}
+                        className="absolute top-2 right-2 p-1.5 bg-slate-900/80 text-slate-400 hover:text-white rounded-lg transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Botón seleccionar desde biblioteca */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPortfolioMediaPicker(true)}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all"
+                  >
+                    <FolderOpen size={14} /> Seleccionar desde biblioteca de medios
+                  </button>
+
+                  <div className="flex items-center gap-3 my-1">
+                    <div className="flex-1 border-t border-slate-800" />
+                    <span className="text-[10px] text-slate-600 font-bold uppercase">o sube una nueva</span>
+                    <div className="flex-1 border-t border-slate-800" />
+                  </div>
+
+                  {/* Subida de archivo */}
                   <div className="relative group">
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) =>
-                        setSelectedFile(e.target.files?.[0] || null)
-                      }
+                      onChange={(e) => {
+                        setSelectedFile(e.target.files?.[0] || null);
+                        setMediaImageUrl(""); // limpiar selección de biblioteca
+                      }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
-                    <div className="w-full bg-slate-950 border-2 border-dashed border-slate-800 p-8 rounded-2xl flex flex-col items-center justify-center text-slate-500 group-hover:border-primary-blue/50 transition-all">
+                    <div className="w-full bg-slate-950 border-2 border-dashed border-slate-800 p-6 rounded-2xl flex flex-col items-center justify-center text-slate-500 group-hover:border-primary-blue/50 transition-all">
                       {selectedFile ? (
-                        <span className="text-primary-blue font-medium">
-                          {selectedFile.name}
-                        </span>
+                        <span className="text-primary-blue font-medium text-sm">{selectedFile.name}</span>
                       ) : (
                         <>
-                          <Plus size={24} className="mb-2" />
-                          <span className="text-xs uppercase font-bold tracking-widest">
-                            Subir Imagen
-                          </span>
+                          <Plus size={20} className="mb-1" />
+                          <span className="text-xs uppercase font-bold tracking-widest">Subir imagen</span>
+                          <span className="text-[10px] text-slate-700 mt-0.5">JPG, PNG, WebP</span>
                         </>
                       )}
                     </div>
                   </div>
                 </div>
 
+                {/* Media Picker modal para portafolio */}
+                {showPortfolioMediaPicker && (
+                  <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onClick={() => setShowPortfolioMediaPicker(false)} />
+                    <div className="relative bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
+                      <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800">
+                        <h3 className="text-sm font-bold text-white">Seleccionar imagen del proyecto</h3>
+                        <button onClick={() => setShowPortfolioMediaPicker(false)} className="text-slate-500 hover:text-white transition-colors"><X size={20} /></button>
+                      </div>
+                      <div className="flex-1 overflow-y-auto">
+                        <MediaLibrary
+                          mode="picker"
+                          onSelect={(url) => {
+                            setMediaImageUrl(url);
+                            setSelectedFile(null);
+                            setShowPortfolioMediaPicker(false);
+                          }}
+                          onClose={() => setShowPortfolioMediaPicker(false)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-4 pt-4">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-grow py-4 bg-slate-800 text-slate-300 font-bold rounded-2xl hover:bg-slate-700 transition-colors"
+                    className="flex-grow py-4 bg-slate-800 text-slate-300 font-bold rounded-2xl hover:bg-slate-700 transition-colors flex items-center justify-center"
                   >
                     Cancelar
                   </button>
@@ -1433,21 +1549,6 @@ function SettingsView() {
               value={getVal("social_linkedin")}
               onChange={e => handleChange("social_linkedin", e.target.value)}
               placeholder="https://linkedin.com/company/tuempresa"
-              className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-5 h-5 rounded-md bg-white/10 inline-flex items-center justify-center text-slate-300">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-              </span>
-              X / Twitter
-            </label>
-            <input
-              type="url"
-              value={getVal("social_twitter")}
-              onChange={e => handleChange("social_twitter", e.target.value)}
-              placeholder="https://x.com/tuperfil"
               className="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all"
             />
           </div>
@@ -1873,7 +1974,7 @@ function BlogView() {
                   <span className="text-xs font-bold text-slate-400">Publicar inmediatamente</span>
                 </label>
                 <div className="flex gap-4 pt-2">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors">Cancelar</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors flex items-center justify-center">Cancelar</button>
                   <button type="submit" disabled={saving} className="flex-[2] py-3.5 bg-primary-blue text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-blue-600 transition-all disabled:opacity-50">
                     {saving ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
                     {saving ? "Guardando..." : editingPost ? "Guardar Cambios" : "Crear Artículo"}
@@ -1898,9 +1999,11 @@ function PopupsView() {
   const [editingPopup, setEditingPopup] = useState<any | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    title: "", subtitle: "", cta_text: "Ver oferta",
-    cta_url: "/#contacto", trigger_type: "exit_intent", trigger_delay: 0, is_active: false,
+    title: "", subtitle: "", cta_text: "Descargar gratis",
+    cta_url: "/#contacto", download_url: "",
+    trigger_type: "delay", trigger_delay: 5, is_active: false,
   });
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
 
   const fetchPopups = () => {
     setLoading(true);
@@ -1914,13 +2017,13 @@ function PopupsView() {
 
   const openCreate = () => {
     setEditingPopup(null);
-    setForm({ title: "", subtitle: "", cta_text: "Ver oferta", cta_url: "/#contacto", trigger_type: "exit_intent", trigger_delay: 0, is_active: false });
+    setForm({ title: "", subtitle: "", cta_text: "Descargar gratis", cta_url: "/#contacto", download_url: "", trigger_type: "delay", trigger_delay: 5, is_active: false });
     setIsModalOpen(true);
   };
 
   const openEdit = (p: any) => {
     setEditingPopup(p);
-    setForm({ title: p.title, subtitle: p.subtitle || "", cta_text: p.cta_text, cta_url: p.cta_url, trigger_type: p.trigger_type, trigger_delay: p.trigger_delay, is_active: !!p.is_active });
+    setForm({ title: p.title, subtitle: p.subtitle || "", cta_text: p.cta_text, cta_url: p.cta_url || "", download_url: p.download_url || "", trigger_type: p.trigger_type, trigger_delay: p.trigger_delay, is_active: !!p.is_active });
     setIsModalOpen(true);
   };
 
@@ -1986,6 +2089,22 @@ function PopupsView() {
                 <span className="text-slate-300 font-bold truncate block">{p.cta_text}</span>
               </div>
             </div>
+            {/* URL del archivo descargable */}
+            {p.download_url ? (
+              <div className="bg-blue-950/30 border border-blue-800/30 rounded-lg px-3 py-2 flex items-center gap-2">
+                <svg viewBox="0 0 56 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 shrink-0">
+                  <rect width="56" height="64" rx="6" fill="#CC0000" />
+                  <text x="28" y="38" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold" fontFamily="Arial,sans-serif">PDF</text>
+                </svg>
+                <a href={p.download_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-400 hover:text-blue-300 font-mono truncate flex-1 transition-colors">
+                  {p.download_url.split("/").pop()}
+                </a>
+              </div>
+            ) : (
+              <div className="bg-slate-950/30 border border-slate-800/30 rounded-lg px-3 py-2">
+                <span className="text-[10px] text-slate-700 italic">Sin archivo de descarga</span>
+              </div>
+            )}
             <div className="flex gap-2 pt-2 border-t border-slate-800/40">
               <button onClick={() => toggleActive(p.id, p.is_active)} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase border justify-center transition-all ${p.is_active ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20 hover:bg-yellow-500/20" : "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20"}`}>
                 {p.is_active ? "Desactivar" : "Activar"}
@@ -2022,9 +2141,48 @@ function PopupsView() {
                     <input required value={form.cta_text} onChange={e => setForm({ ...form, cta_text: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">URL del botón *</label>
-                    <input required value={form.cta_url} onChange={e => setForm({ ...form, cta_url: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">URL CTA (opcional)</label>
+                    <input value={form.cta_url} onChange={e => setForm({ ...form, cta_url: e.target.value })} className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none" />
                   </div>
+                </div>
+                {/* Archivo descargable */}
+                <div>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">URL del archivo descargable</label>
+                  <div className="flex gap-2">
+                    <input
+                      value={form.download_url}
+                      onChange={e => setForm({ ...form, download_url: e.target.value })}
+                      placeholder="/uploads/tu-guia.pdf  ó  https://..."
+                      className="flex-1 bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-xs text-slate-300 outline-none font-mono focus:ring-1 focus:ring-primary-blue placeholder-slate-700 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowMediaPicker(true)}
+                      title="Seleccionar de la biblioteca de medios"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shrink-0"
+                    >
+                      <FolderOpen size={13} /> Biblioteca
+                    </button>
+                    {form.download_url && (
+                      <button
+                        type="button"
+                        onClick={() => setForm({ ...form, download_url: "" })}
+                        title="Quitar archivo"
+                        className="px-3 py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-bold rounded-xl transition-all"
+                      >
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+                  {form.download_url ? (
+                    <p className="text-[10px] text-green-400 mt-1.5 flex items-center gap-1">
+                      <Check size={10} /> El visitante recibirá este archivo por email al suscribirse
+                    </p>
+                  ) : (
+                    <p className="text-[10px] text-slate-700 mt-1.5">
+                      Pega una URL o selecciona un archivo de la biblioteca. Si no hay archivo, solo se guarda el email.
+                    </p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -2049,13 +2207,29 @@ function PopupsView() {
                   <span className="text-xs font-bold text-slate-400">Activar popup</span>
                 </label>
                 <div className="flex gap-4 pt-2">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors">Cancelar</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors flex items-center justify-center">Cancelar</button>
                   <button type="submit" disabled={saving} className="flex-[2] py-3.5 bg-primary-blue text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-blue-600 transition-all disabled:opacity-50">
                     {saving ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
                     {saving ? "Guardando..." : editingPopup ? "Guardar Cambios" : "Crear Popup"}
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Media Picker Modal para seleccionar PDF/archivo */}
+      <AnimatePresence>
+        {showMediaPicker && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowMediaPicker(false)} className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-4xl bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl z-10" style={{ maxHeight: '80vh' }}>
+              <MediaLibrary
+                mode="picker"
+                onSelect={(url) => { setForm(f => ({ ...f, download_url: url })); setShowMediaPicker(false); }}
+                onClose={() => setShowMediaPicker(false)}
+              />
             </motion.div>
           </div>
         )}
@@ -2244,7 +2418,7 @@ function PricingView() {
                   </label>
                 </div>
                 <div className="flex gap-4 pt-2">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors">Cancelar</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors flex items-center justify-center">Cancelar</button>
                   <button type="submit" disabled={saving} className="flex-[2] py-3.5 bg-primary-blue text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-blue-600 transition-all disabled:opacity-50">
                     {saving ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
                     {saving ? "Guardando..." : editingPlan ? "Guardar Cambios" : "Crear Plan"}
@@ -2271,6 +2445,310 @@ function MediaView() {
       </div>
       <div className="bg-slate-900/40 border border-slate-800/60 rounded-2xl overflow-hidden">
         <MediaLibrary mode="library" />
+      </div>
+    </div>
+  );
+}
+
+// ================================================================
+// POPUP LEADS VIEW — Emails capturados por el popup
+// ================================================================
+function PopupLeadsView() {
+  const [leads, setLeads] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/admin/popup-leads")
+      .then(r => r.json())
+      .then(d => { setLeads(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const filtered = leads.filter(l =>
+    l.email?.toLowerCase().includes(search.toLowerCase()) ||
+    l.download_url?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const exportCSV = () => {
+    const rows = [["ID", "Email", "Popup", "Archivo descargado", "Enviado", "Fecha"]];
+    filtered.forEach(l => rows.push([
+      l.id, l.email, l.popup_id ?? "-", l.download_url ?? "-",
+      l.sent_at ? new Date(l.sent_at).toLocaleString("es-ES") : "-",
+      new Date(l.created_at).toLocaleString("es-ES"),
+    ]));
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "popup-leads.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Leads del Popup</h2>
+          <p className="text-[10px] text-slate-600 mt-1">Emails capturados con el archivo que se les envió</p>
+        </div>
+        <div className="flex gap-3">
+          <div className="relative">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar email o archivo..."
+              className="pl-8 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white w-56 focus:outline-none focus:ring-1 focus:ring-primary-blue"
+            />
+          </div>
+          <button
+            onClick={exportCSV}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all"
+          >
+            <Download size={13} /> Exportar CSV
+          </button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {[
+          { label: "Total leads", value: leads.length, color: "text-white" },
+          { label: "Con archivo enviado", value: leads.filter(l => l.sent_at).length, color: "text-green-400" },
+          { label: "Sin archivo", value: leads.filter(l => !l.download_url).length, color: "text-slate-400" },
+        ].map((s, i) => (
+          <div key={i} className="bg-slate-900/40 border border-slate-800/60 rounded-xl p-4">
+            <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
+            <div className="text-[10px] text-slate-600 uppercase tracking-wider mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="bg-slate-900/40 border border-slate-800/60 rounded-2xl overflow-hidden">
+        {loading ? (
+          <div className="flex justify-center py-16"><Loader2 className="animate-spin text-primary-blue" /></div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 text-slate-600 italic text-sm">
+            {search ? "Sin resultados para esa búsqueda" : "No hay leads capturados aún."}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-800/60">
+                  <th className="px-5 py-3.5 text-left text-[10px] font-black text-slate-600 uppercase tracking-widest">#</th>
+                  <th className="px-5 py-3.5 text-left text-[10px] font-black text-slate-600 uppercase tracking-widest">Email</th>
+                  <th className="px-5 py-3.5 text-left text-[10px] font-black text-slate-600 uppercase tracking-widest">Archivo enviado</th>
+                  <th className="px-5 py-3.5 text-left text-[10px] font-black text-slate-600 uppercase tracking-widest">Email enviado</th>
+                  <th className="px-5 py-3.5 text-left text-[10px] font-black text-slate-600 uppercase tracking-widest">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((lead, i) => (
+                  <tr key={lead.id} className={`border-b border-slate-800/30 transition-colors hover:bg-slate-800/20 ${i % 2 === 0 ? "" : "bg-slate-900/20"}`}>
+                    <td className="px-5 py-3.5 text-slate-600 font-mono">{lead.id}</td>
+                    <td className="px-5 py-3.5">
+                      <span className="text-white font-semibold">{lead.email}</span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {lead.download_url ? (
+                        <a
+                          href={lead.download_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 font-mono transition-colors"
+                        >
+                          <ExternalLink size={11} />
+                          {lead.download_url.split("/").pop()}
+                        </a>
+                      ) : (
+                        <span className="text-slate-700 italic">Sin archivo</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {lead.sent_at ? (
+                        <span className="inline-flex items-center gap-1 text-green-400 font-semibold">
+                          <Check size={11} /> Enviado
+                        </span>
+                      ) : (
+                        <span className="text-slate-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 text-slate-500">
+                      {new Date(lead.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ================================================================
+// PROFILE VIEW — Cambiar contrasena y datos del usuario
+// ================================================================
+function ProfileView() {
+  const { data: session } = useSession();
+  const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [status, setStatus] = useState("idle");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage("");
+    if (form.newPassword !== form.confirmPassword) {
+      setStatus("error"); setMessage("Las contrasenas nuevas no coinciden."); return;
+    }
+    if (form.newPassword.length < 8) {
+      setStatus("error"); setMessage("La nueva contrasena debe tener al menos 8 caracteres."); return;
+    }
+    setStatus("saving");
+    try {
+      const res = await fetch("/api/admin/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: form.currentPassword, newPassword: form.newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Error");
+      setStatus("success");
+      setMessage(data.message ?? "Contrasena actualizada correctamente.");
+      setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err) {
+      setStatus("error");
+      setMessage((err as any)?.message ?? "Error al actualizar la contrasena.");
+    }
+  };
+
+  const inputCls = "w-full bg-slate-950 border border-slate-800 p-3.5 pr-12 rounded-xl text-sm text-white focus:ring-1 focus:ring-primary-blue outline-none transition-all placeholder-slate-700";
+
+  const passwordStrength = (() => {
+    const p = form.newPassword;
+    if (!p) return 0;
+    let s = 0;
+    if (p.length >= 8) s++;
+    if (/[A-Z]/.test(p)) s++;
+    if (/[0-9]/.test(p)) s++;
+    if (/[^A-Za-z0-9]/.test(p)) s++;
+    return s;
+  })();
+  const strengthColors = ["", "bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500"];
+  const strengthLabels = ["", "Debil", "Regular", "Buena", "Fuerte"];
+
+  return (
+    <div className="space-y-8 max-w-2xl mx-auto">
+      <div>
+        <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Mi Perfil</h2>
+        <p className="text-[10px] text-slate-600 mt-1">Gestiona tu informacion de acceso al dashboard</p>
+      </div>
+
+      {/* Info del usuario */}
+      <div className="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-6">
+        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-5">Informacion de la cuenta</h3>
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-blue-500/20 shrink-0">
+            {session?.user?.name?.charAt(0)?.toUpperCase() ?? "A"}
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-white font-bold text-lg leading-tight">{session?.user?.name ?? "Administrador"}</p>
+            <p className="text-slate-400 text-sm">{session?.user?.email ?? "-"}</p>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase rounded-full">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" /> Administrador
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Cambiar contrasena */}
+      <div className="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-6">
+        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-5">Cambiar contrasena</h3>
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          <div>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Contrasena actual *</label>
+            <div className="relative">
+              <input type={showCurrent ? "text" : "password"} required value={form.currentPassword}
+                onChange={e => setForm({ ...form, currentPassword: e.target.value })}
+                placeholder="Tu contrasena actual" className={inputCls} />
+              <button type="button" onClick={() => setShowCurrent(v => !v)} tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 p-1">
+                {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Nueva contrasena *</label>
+            <div className="relative">
+              <input type={showNew ? "text" : "password"} required minLength={8} value={form.newPassword}
+                onChange={e => setForm({ ...form, newPassword: e.target.value })}
+                placeholder="Minimo 8 caracteres" className={inputCls} />
+              <button type="button" onClick={() => setShowNew(v => !v)} tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 p-1">
+                {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {form.newPassword && (
+              <div className="mt-2">
+                <div className="flex gap-1 mb-1">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= passwordStrength ? strengthColors[passwordStrength] : "bg-slate-800"}`} />
+                  ))}
+                </div>
+                <p className="text-[10px] font-bold text-slate-500">{strengthLabels[passwordStrength]}</p>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Confirmar nueva contrasena *</label>
+            <div className="relative">
+              <input type={showConfirm ? "text" : "password"} required value={form.confirmPassword}
+                onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
+                placeholder="Repite la nueva contrasena"
+                className={`${inputCls} ${form.confirmPassword && form.confirmPassword !== form.newPassword ? "border-red-500/60" : form.confirmPassword && form.confirmPassword === form.newPassword ? "border-green-500/40" : ""}`} />
+              <button type="button" onClick={() => setShowConfirm(v => !v)} tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 p-1">
+                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {form.confirmPassword && form.confirmPassword !== form.newPassword && (
+              <p className="text-red-400 text-[10px] mt-1">Las contrasenas no coinciden</p>
+            )}
+            {form.confirmPassword && form.confirmPassword === form.newPassword && (
+              <p className="text-green-400 text-[10px] mt-1">Las contrasenas coinciden</p>
+            )}
+          </div>
+
+          {message && (
+            <div className={`px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 ${status === "success" ? "bg-green-500/10 border border-green-500/20 text-green-400" : "bg-red-500/10 border border-red-500/20 text-red-400"}`}>
+              {status === "success" ? <Check size={16} /> : <X size={16} />}
+              {message}
+            </div>
+          )}
+
+          <div className="flex gap-4 pt-2">
+            <button type="button"
+              onClick={() => { setForm({ currentPassword: "", newPassword: "", confirmPassword: "" }); setStatus("idle"); setMessage(""); }}
+              className="flex-1 py-3.5 bg-slate-800 text-slate-300 font-bold rounded-xl hover:bg-slate-700 transition-colors text-sm">
+              Limpiar
+            </button>
+            <button type="submit" disabled={status === "saving"}
+              className="flex-[2] py-3.5 bg-primary-blue text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-blue-600 transition-all disabled:opacity-50 text-sm">
+              {status === "saving" ? <><Loader2 size={18} className="animate-spin" /> Guardando...</> : <><Check size={18} /> Actualizar contrasena</>}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

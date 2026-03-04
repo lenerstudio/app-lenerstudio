@@ -26,7 +26,8 @@ const Hero: React.FC<HeroProps> = () => {
       <div className="absolute inset-0 z-0 bg-gray-950 overflow-hidden" aria-hidden="true">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-900/20 rounded-full blur-[120px] opacity-60" />
         <div className="absolute bottom-0 left-[-10%] w-[500px] h-[500px] bg-cyan-900/20 rounded-full blur-[100px] opacity-50" />
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-5 mix-blend-overlay" />
+        <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")", backgroundSize: "128px 128px" }} />
+
       </div>
 
       <div className="container mx-auto px-4 z-10">

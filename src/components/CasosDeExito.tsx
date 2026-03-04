@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -21,8 +21,8 @@ const casosDeExito: Caso[] = [
         problem: "Web antigua no transmitía autoridad, pocos leads y sin un sistema claro para agendar sesiones.",
         solution: "Rediseño completo enfocado en conversión, embudo integrado y sistema automático de reservas.",
         result: "+150% contactos en 90 días",
-        beforeImg: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=75&blur=md",
-        afterImg: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+        beforeImg: "/caso-coaching-antes.png",
+        afterImg: "/caso-coaching-despues.png",
     },
     {
         id: "legal",
@@ -30,8 +30,8 @@ const casosDeExito: Caso[] = [
         problem: "Sitio web invisible en Google, clientes solo llegaban por boca a boca.",
         solution: "Nueva web corporativa optimizada para SEO local y artículos de autoridad legal.",
         result: "+80% consultas cualificadas mensual",
-        beforeImg: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=600&q=75&blur=md",
-        afterImg: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80",
+        beforeImg: "/caso-legal-antes.png",
+        afterImg: "/caso-legal-despues.png",
     },
     {
         id: "ecommerce",
@@ -39,22 +39,60 @@ const casosDeExito: Caso[] = [
         problem: "Tasa de abandono de carrito superior al 70%, mal rendimiento en móviles.",
         solution: "Tienda online rápida, checkout simplificado en 1 paso y diseño mobile-first.",
         result: "Duplicaron ventas online en 60 días",
-        beforeImg: "https://images.unsplash.com/photo-1556740714-a8395b3bf30f?w=600&q=75&blur=md",
-        afterImg: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&q=80",
+        beforeImg: "/caso-ecommerce-antes.png",
+        afterImg: "/caso-ecommerce-despues.png",
     }
 ];
 
+
 const CasosDeExito: React.FC = () => {
     const [activeTab, setActiveTab] = useState<number>(0);
+    const [sliderPct, setSliderPct] = useState(0);   // 0 = full ANTES, 100 = full DESPUÉS
+    const [isHovering, setIsHovering] = useState(false);
+    const autoRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const dirRef = useRef<1 | -1>(1);                // 1 = avanzando, -1 = retrocediendo
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    const nextCase = () => {
-        setActiveTab((prev) => (prev === casosDeExito.length - 1 ? 0 : prev + 1));
+    // Animación automática: avanza de 0→100 y vuelve 100→0 suavemente
+    const startAuto = useCallback(() => {
+        if (autoRef.current) clearInterval(autoRef.current);
+        autoRef.current = setInterval(() => {
+            setSliderPct(prev => {
+                const next = prev + dirRef.current * 0.6;
+                if (next >= 100) { dirRef.current = -1; return 100; }
+                if (next <= 0) { dirRef.current = 1; return 0; }
+                return next;
+            });
+        }, 16); // ~60fps
+    }, []);
+
+    // Resetea slider al cambiar de caso
+    useEffect(() => {
+        setSliderPct(0);
+        dirRef.current = 1;
+        startAuto();
+        return () => { if (autoRef.current) clearInterval(autoRef.current); };
+    }, [activeTab, startAuto]);
+
+    // Pausa al hover
+    useEffect(() => {
+        if (isHovering) {
+            if (autoRef.current) clearInterval(autoRef.current);
+        } else {
+            startAuto();
+        }
+    }, [isHovering, startAuto]);
+
+    // Permite arrastrar manualmente
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const pct = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100));
+        setSliderPct(pct);
     };
 
-    const prevCase = () => {
-        setActiveTab((prev) => (prev === 0 ? casosDeExito.length - 1 : prev - 1));
-    };
-
+    const nextCase = () => setActiveTab(prev => (prev === casosDeExito.length - 1 ? 0 : prev + 1));
+    const prevCase = () => setActiveTab(prev => (prev === 0 ? casosDeExito.length - 1 : prev - 1));
     const currentCase = casosDeExito[activeTab];
 
     return (
@@ -87,8 +125,8 @@ const CasosDeExito: React.FC = () => {
                                 key={caso.id}
                                 onClick={() => setActiveTab(index)}
                                 className={`px-6 py-3 rounded-full font-medium transition-all ${activeTab === index
-                                        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
                                     }`}
                             >
                                 {caso.industry}
@@ -106,32 +144,62 @@ const CasosDeExito: React.FC = () => {
                                 transition={{ duration: 0.4 }}
                                 className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center"
                             >
-                                {/* Images Before / After */}
-                                <div className="relative aspect-[4/3] w-full group rounded-2xl overflow-hidden shadow-lg bg-gray-200 dark:bg-gray-800">
-                                    <div className="absolute inset-0 w-1/2 h-full border-r-2 border-white/50 z-20">
-                                        <img
-                                            src={currentCase.beforeImg}
-                                            alt="Antes del rediseño"
-                                            loading="lazy"
-                                            decoding="async"
-                                            className="absolute inset-0 w-[200%] max-w-none h-full object-cover filter brightness-75 grayscale"
-                                        />
-                                        <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-30">
-                                            ANTES
-                                        </div>
-                                    </div>
-                                    <div className="absolute inset-0 w-1/2 h-full left-1/2 z-10 overflow-hidden">
+                                {/* ── Slider automático ANTES / DESPUÉS ── */}
+                                <div
+                                    ref={containerRef}
+                                    className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-lg bg-gray-200 dark:bg-gray-800 cursor-ew-resize select-none"
+                                    onMouseEnter={() => setIsHovering(true)}
+                                    onMouseLeave={() => setIsHovering(false)}
+                                    onMouseMove={handleMouseMove}
+                                >
+                                    {/* ANTES — imagen base (siempre visible) */}
+                                    <img
+                                        src={currentCase.beforeImg}
+                                        alt="Antes del rediseño"
+                                        className="absolute inset-0 w-full h-full object-cover brightness-75 grayscale"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+
+                                    {/* DESPUÉS — se revela con clipPath animado */}
+                                    <div
+                                        className="absolute inset-0"
+                                        style={{
+                                            clipPath: `inset(0 ${100 - sliderPct}% 0 0)`,
+                                            transition: isHovering ? "none" : "clip-path 0ms linear",
+                                        }}
+                                    >
                                         <img
                                             src={currentCase.afterImg}
                                             alt="Después del rediseño"
+                                            className="absolute inset-0 w-full h-full object-cover"
                                             loading="lazy"
                                             decoding="async"
-                                            className="absolute inset-0 -left-[100%] w-[200%] max-w-none h-full object-cover rounded-2xl"
                                         />
                                     </div>
-                                    <div className="absolute top-4 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-30">
-                                        DESPUÉS
+
+                                    {/* Línea divisora */}
+                                    <div
+                                        className="absolute top-0 bottom-0 w-0.5 bg-white/80 shadow-[0_0_8px_rgba(255,255,255,0.8)] z-20 pointer-events-none"
+                                        style={{ left: `${sliderPct}%`, transition: isHovering ? "none" : "left 0ms linear" }}
+                                    >
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center pointer-events-none">
+                                            <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4 text-slate-500" stroke="currentColor" strokeWidth={2}>
+                                                <path d="M6 8l-3 3 3 3M14 8l3 3-3 3" strokeLinecap="round" />
+                                            </svg>
+                                        </div>
                                     </div>
+
+                                    {/* Badges */}
+                                    <div className="absolute top-3 left-3 bg-red-500/90 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow z-30 backdrop-blur-sm">ANTES</div>
+                                    <div className="absolute top-3 right-3 bg-green-500/90 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow z-30 backdrop-blur-sm">DESPUÉS</div>
+
+                                    {/* Hint cuando slider está al inicio */}
+                                    {sliderPct < 5 && (
+                                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/50 text-white text-[10px] font-semibold rounded-full backdrop-blur-sm pointer-events-none animate-pulse">
+                                            ← Revelando →
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Content */}

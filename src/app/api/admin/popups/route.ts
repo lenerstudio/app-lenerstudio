@@ -29,22 +29,23 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { title, subtitle, cta_text, cta_url, trigger_type, trigger_delay, is_active } = body;
+        const { title, subtitle, cta_text, cta_url, download_url, trigger_type, trigger_delay, is_active } = body;
 
-        if (!title || !cta_text || !cta_url) {
+        if (!title || !cta_text) {
             return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
         }
 
         await query(
-            `INSERT INTO popups (title, subtitle, cta_text, cta_url, trigger_type, trigger_delay, is_active)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [title, subtitle || "", cta_text, cta_url, trigger_type || "exit_intent", trigger_delay || 0, is_active ? 1 : 0]
+            `INSERT INTO popups (title, subtitle, cta_text, cta_url, download_url, trigger_type, trigger_delay, is_active)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [title, subtitle || "", cta_text, cta_url || "", download_url || null,
+                trigger_type || "delay", trigger_delay || 5, is_active ? 1 : 0]
         );
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("Popups POST error:", error);
-        return NextResponse.json({ error: "Error al crear popup" }, { status: 500 });
+    } catch (error: any) {
+        console.error("Popups POST error:", error?.message);
+        return NextResponse.json({ error: "Error al crear popup", detail: error?.message }, { status: 500 });
     }
 }
 
@@ -55,20 +56,21 @@ export async function PUT(req: Request) {
 
     try {
         const body = await req.json();
-        const { id, title, subtitle, cta_text, cta_url, trigger_type, trigger_delay, is_active } = body;
+        const { id, title, subtitle, cta_text, cta_url, download_url, trigger_type, trigger_delay, is_active } = body;
 
         if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
 
         await query(
-            `UPDATE popups SET title=?, subtitle=?, cta_text=?, cta_url=?, trigger_type=?, trigger_delay=?, is_active=?, updated_at=NOW()
-             WHERE id=?`,
-            [title, subtitle || "", cta_text, cta_url, trigger_type || "exit_intent", trigger_delay || 0, is_active ? 1 : 0, id]
+            `UPDATE popups SET title=?, subtitle=?, cta_text=?, cta_url=?, download_url=?,
+             trigger_type=?, trigger_delay=?, is_active=?, updated_at=NOW() WHERE id=?`,
+            [title, subtitle || "", cta_text, cta_url || "", download_url || null,
+                trigger_type || "delay", trigger_delay || 5, is_active ? 1 : 0, id]
         );
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("Popups PUT error:", error);
-        return NextResponse.json({ error: "Error al actualizar popup" }, { status: 500 });
+    } catch (error: any) {
+        console.error("Popups PUT error:", error?.message);
+        return NextResponse.json({ error: "Error al actualizar popup", detail: error?.message }, { status: 500 });
     }
 }
 

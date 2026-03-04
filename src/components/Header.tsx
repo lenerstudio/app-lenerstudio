@@ -101,12 +101,13 @@ const Header: React.FC<HeaderProps> = () => {
             <Image
               src={logo}
               alt="Logo de Lener Studio - Expertos en desarrollo web para emprendedores"
-              width={120}
               height={48}
+              width={0}
               priority
               className="h-12 w-auto object-contain"
               style={{ width: "auto" }}
             />
+
           </motion.button>
 
           {/* Desktop Navigation */}

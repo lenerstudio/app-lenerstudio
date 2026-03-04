@@ -64,7 +64,7 @@ const Testimonios: React.FC<TestimoniosProps> = () => {
             className="max-w-3xl mx-auto"
           >
             <span className="inline-block px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-xs font-bold uppercase tracking-widest mb-6">
-              Casos de éxito
+              Testimonio
             </span>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
               Resultados Reales de <span className="text-primary-blue">Negocios Reales</span>
