@@ -201,13 +201,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return { title: "Artículo no encontrado | Lener Studio" };
     }
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lenerstudio.com";
+    const imageUrl = post.image
+        ? (post.image.startsWith("http") ? post.image : `${siteUrl}${post.image}`)
+        : "";
+
     return {
         title: `${post.title} | Blog Lener Studio`,
         description: post.excerpt,
         openGraph: {
             title: post.title,
             description: post.excerpt,
-            images: post.image ? [{ url: post.image }] : [],
+            url: `${siteUrl}/blog/${post.slug}`,
+            images: imageUrl ? [{ url: imageUrl }] : [],
             type: "article",
         },
     };
