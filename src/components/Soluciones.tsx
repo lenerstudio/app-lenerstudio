@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Zap, Building, Settings, Check } from "lucide-react";
 import type { Solucion } from "../types";
@@ -92,16 +91,15 @@ const Soluciones: React.FC<SolucionesProps> = () => {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.3 }}
-                className="lg:w-1/2"
+                className="w-full lg:w-1/2"
               >
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl group h-[400px]">
-                  <Image
+                <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl group h-[280px] sm:h-[350px] lg:h-[400px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={service.image}
                     alt={service.title}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     loading={index === 0 ? "eager" : "lazy"}
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-20 group-hover:opacity-30 transition-opacity duration-300`}
