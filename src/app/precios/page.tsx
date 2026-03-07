@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Descubre nuestros planes de diseño y desarrollo web. Landing pages, webs corporativas y e-commerce adaptados a tu negocio. Presupuesto sin compromiso.",
   openGraph: {
     title: "Precios y Planes | Lener Studio",
-    description: "Landing pages desde 497€. Webs corporativas desde 997€. E-commerce y proyectos avanzados desde 1.997€.",
+    description: "Landing pages desde 397€. Webs corporativas desde 897€. E-commerce y proyectos avanzados desde 1.897€.",
     url: "https://lenerstudio.com/precios",
   }
 };
@@ -18,7 +18,7 @@ const staticPlans = [
     id: 1,
     name: "Plan Starter",
     description: "Ideal para dar el primer paso online.",
-    price: "497",
+    price: "397",
     features: ["Landing page de 1 página", "Diseño responsive", "Formulario de contacto", "SEO básico", "Entrega en 7 días"],
     cta_text: "Quiero mi Landing Page",
     cta_url: "/#contacto",
@@ -30,7 +30,7 @@ const staticPlans = [
     id: 2,
     name: "Plan Profesional",
     description: "Para negocios que buscan crecer.",
-    price: "997",
+    price: "897",
     features: ["Web corporativa hasta 5 páginas", "Panel de administración", "Blog integrado", "SEO avanzado", "Google Analytics", "Entrega en 14 días"],
     cta_text: "Quiero mi Web Profesional",
     cta_url: "/#contacto",
@@ -42,7 +42,7 @@ const staticPlans = [
     id: 3,
     name: "Plan Premium",
     description: "Soluciones completas y avanzadas.",
-    price: "1.997",
+    price: "1.897",
     features: ["Web autogestionable completa", "E-commerce o funcionalidades avanzadas", "Estrategia SEO 3 meses", "Soporte prioritario 6 meses", "Entrega en 21 días"],
     cta_text: "Quiero el Plan Premium",
     cta_url: "/#contacto",

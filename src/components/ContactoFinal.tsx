@@ -9,6 +9,7 @@ import { Button } from "../components/ui/button";
 import { useToast } from "../components/ui/use-toast";
 import type { FormData } from "../types";
 import emailjs from "@emailjs/browser";
+import { trackEvent } from '@/lib/pixel'
 
 export interface ContactoFinalProps {
   onSubmit?: (data: FormData) => void;
@@ -116,6 +117,7 @@ const ContactoFinal: React.FC<ContactoFinalProps> = () => {
       setAceptaPrivacidad(false);
       setStatus("success");
       setIsSubmitting(false);
+      trackEvent('Contact') // 👈 agrega esta línea
       router.push("/gracias");
     } catch (error) {
       console.error("Error al enviar EmailJS:", error);

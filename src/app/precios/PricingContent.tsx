@@ -3,6 +3,9 @@
 import { motion } from "framer-motion";
 import { Check, ArrowRight, ArrowLeft, Star } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from 'react'
+import { trackEvent } from '@/lib/pixel'
+
 
 export interface PricingPlan {
     id: number;
@@ -22,6 +25,14 @@ interface PricingContentProps {
 }
 
 export default function PricingContent({ plans }: PricingContentProps) {
+    // 3. VIEW CONTENT — Al ver la página de Precios
+    useEffect(() => {
+        trackEvent('ViewContent', {
+            content_name: 'Precios',
+            content_category: 'Landing Page'
+        })
+    }, [])
+
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white pb-24">
             {/* Background gradients */}
@@ -73,8 +84,8 @@ export default function PricingContent({ plans }: PricingContentProps) {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.15, duration: 0.5 }}
                             className={`relative flex flex-col h-full rounded-[2.5rem] p-8 transition-transform duration-300 hover:-translate-y-2 ${plan.is_popular
-                                    ? "bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow-2xl scale-105 md:scale-110 z-10 border-0"
-                                    : "bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xl"
+                                ? "bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow-2xl scale-105 md:scale-110 z-10 border-0"
+                                : "bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xl"
                                 }`}
                         >
                             {plan.is_popular && (
@@ -120,9 +131,14 @@ export default function PricingContent({ plans }: PricingContentProps) {
 
                             <Link
                                 href={plan.cta_url}
+                                onClick={() => trackEvent('InitiateCheckout', {
+                                    content_name: plan.name,
+                                    value: parseFloat(plan.price.replace('.', '').replace(',', '.')),
+                                    currency: 'EUR'
+                                })}
                                 className={`flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-semibold transition-all border ${plan.is_popular
-                                        ? "bg-white text-blue-600 hover:bg-blue-50 border-transparent shadow-xl"
-                                        : "bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 border-gray-200 dark:border-gray-700"
+                                    ? "bg-white text-blue-600 hover:bg-blue-50 border-transparent shadow-xl"
+                                    : "bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 border-gray-200 dark:border-gray-700"
                                     }`}
                             >
                                 {plan.cta_text}

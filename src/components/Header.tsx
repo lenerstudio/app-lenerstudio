@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import logo from "../assets/img/logo.webp";
+import { trackEvent } from '@/lib/pixel'
 
 export interface HeaderProps {
   scrolled?: boolean;
@@ -24,20 +25,40 @@ const Header: React.FC<HeaderProps> = () => {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Efecto para el listener de scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, []); // Dependencias vacías para el listener global
+
+  // Efecto para el scroll persistente tras cambiar de ruta
+  useEffect(() => {
+    if (pathname === "/") {
+      const savedAnchor = sessionStorage.getItem("scrollAnchor");
+      if (savedAnchor) {
+        sessionStorage.removeItem("scrollAnchor");
+        setTimeout(() => {
+          const element = document.querySelector(savedAnchor);
+          if (element) {
+            const headerOffset = 80;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+          }
+        }, 500);
+      }
+    }
+  }, [pathname]); // Este hook solo depende del cambio de ruta
 
   if (pathname.startsWith("/admin") || pathname.startsWith("/login")) return null;
 
   const navLinks: NavLink[] = [
     { label: "Inicio", href: "#inicio" },
     { label: "Servicios", href: "#servicios" },
-    { label: "Casos de Éxito", href: "#testimonios" },
+    { label: "Casos de Éxito", href: "#casos" },
     { label: "Portafolio", href: "/portafolio", isRoute: true },
     { label: "Precios", href: "/precios", isRoute: true },
     { label: "Blog", href: "/blog", isRoute: true },
@@ -54,18 +75,10 @@ const Header: React.FC<HeaderProps> = () => {
       return;
     }
 
-    // Si estamos en una subpágina, volvemos al inicio primero
+    // Si estamos en una subpágina, guardamos el ancla y volvemos al inicio
     if (pathname !== "/") {
+      sessionStorage.setItem("scrollAnchor", link.href);
       router.push("/");
-      setTimeout(() => {
-        const element = document.querySelector(link.href);
-        if (element) {
-          const headerOffset = 80;
-          const offsetPosition =
-            element.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-          window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-        }
-      }, 300);
       return;
     }
 
@@ -132,7 +145,10 @@ const Header: React.FC<HeaderProps> = () => {
               </button>
             ))}
             <Button
-              onClick={() => handleNavClick({ label: "Contacto", href: "#contacto" })}
+              onClick={() => {
+                trackEvent('Lead', { content_name: 'Agendar Llamada' })
+                handleNavClick({ label: "Contacto", href: "#contacto" })
+              }}
               aria-label="Agendar llamada diagnóstica - ir a sección de contacto"
               className="bg-primary-blue hover:bg-blue-700 text-white px-6 py-2 rounded-full shadow-md"
             >

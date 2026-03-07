@@ -12,8 +12,11 @@ import {
     Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from '@/lib/pixel'
 
 export default function GraciasPage() {
+
+
     const router = useRouter();
 
     // Scroll al top al cargar la página
@@ -41,7 +44,13 @@ export default function GraciasPage() {
             gradient: "from-green-500 to-teal-500",
         },
     ];
-
+    // 5. COMPLETE REGISTRATION — Página de gracias (/gracias)
+    // En tu componente de la página /gracias:
+    useEffect(() => {
+        trackEvent('CompleteRegistration', {
+            content_name: 'Envio Formulario Completo'
+        })
+    }, [])
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 flex items-center justify-center px-4 py-16 relative overflow-hidden">
 

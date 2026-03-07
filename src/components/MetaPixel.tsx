@@ -13,6 +13,7 @@ declare global {
     }
 }
 
+
 const META_PIXEL_ID = '774181956921417'
 
 export default function MetaPixel() {
