@@ -7,6 +7,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
 import ClientOnlyComponents from "@/components/ClientOnlyComponents";
 import { GoogleTagManager } from '@next/third-parties/google'
+import MetaPixel from '@/components/MetaPixel'
+import { Suspense } from 'react'
 
 const inter = Inter({
     subsets: ["latin"],
@@ -143,7 +145,10 @@ export default function RootLayout({
                 >
                     Saltar al contenido principal
                 </a>
-
+                {/* Suspense es requerido por useSearchParams en App Router */}
+                <Suspense fallback={null}>
+                    <MetaPixel />
+                </Suspense>
 
                 <Providers>
                     <Header />
